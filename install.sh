@@ -8,6 +8,10 @@ mkdir -p "$TARGET_DIR"
 
 for skill in "$SCRIPT_DIR"/skills/*/; do
   name="$(basename "$skill")"
-  ln -sfn "$skill" "$TARGET_DIR/$name"
-  echo "linked: $name -> $TARGET_DIR/$name"
+  dest="$TARGET_DIR/$name"
+  if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+    rm -rf "$dest"
+  fi
+  ln -sfn "$skill" "$dest"
+  echo "linked: $name -> $dest"
 done
