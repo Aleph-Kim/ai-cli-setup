@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TOPIC__</title>
+<style>
+:root{
+  --bg:#ffffff; --ink:#111418; --muted:#6b7280;
+  --line:#e5e7eb; --card:#f6f7f8; --accent:#2563eb;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:14px/1.55 system-ui,-apple-system,"Segoe UI","Noto Sans KR",sans-serif;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
+.hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.hd h1{font-size:18px;margin:0;letter-spacing:-.01em}
+.hd .mode{font:11px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:2px 6px}
+
+/* 다이어그램 + 리모컨: 한 블록으로 붙어 있되 페이지와 함께 스크롤된다 */
+.stage{background:var(--bg);border-bottom:1px solid var(--line);padding-bottom:0}
+.def{position:relative;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 5px 5px 0;padding:10px 12px;margin:0 0 4px}
+.def .one{margin:0;font-size:14px;line-height:1.5;padding-right:52px}
+.def .terms{list-style:none;display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 0 0;padding:0}
+.def .terms li{font:11.5px var(--mono);color:var(--muted)}
+.def .terms b{color:var(--ink);font-weight:600;margin-right:4px}
+.def .more{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--line)}
+.def .more.hide{display:none}
+.def .more dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px}
+.def .more dt{font:11px var(--mono);color:var(--accent);white-space:nowrap}
+.def .more dd{margin:0;font-size:13px;line-height:1.5}
+.def .toggle{
+  position:absolute;top:8px;right:8px;background:var(--bg);border:1px solid var(--line);
+  border-radius:3px;font:11px var(--mono);color:var(--muted);padding:2px 7px;cursor:pointer;
+}
+.def .toggle:hover{border-color:var(--accent);color:var(--accent)}
+.diagram{padding:8px 0 4px;overflow:hidden}
+.diagram svg{display:block;width:100%;height:100%}
+.grip{height:12px;cursor:ns-resize;touch-action:none;position:relative}
+.grip::after{
+  content:"";position:absolute;left:50%;top:5px;width:44px;height:3px;margin-left:-22px;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+}
+.grip:hover::after,.grip.on::after{border-color:var(--accent)}
+.remote{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:8px 0 10px;border-top:1px solid var(--line);background:var(--bg);
+}
+.remote button{
+  font:12px/1 var(--mono);color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:4px;padding:7px 11px;cursor:pointer;
+}
+.remote button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.remote button:disabled{color:#c3c7cc;cursor:default}
+.remote button.play{border-color:var(--accent);color:var(--accent)}
+.dots{display:flex;gap:6px;margin-left:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:0;padding:0;cursor:pointer}
+.dot.on{background:var(--accent)}
+.dot.done{background:var(--muted)}
+.counter{margin-left:auto;font:11px var(--mono);color:var(--muted)}
+
+
+/* SVG 하이라이트 */
+[data-node],[data-edge]{transition:opacity .15s}
+.dim{opacity:.25}
+g[data-node]:not(.dim) rect,g[data-node]:not(.dim) circle,
+g[data-node]:not(.dim) ellipse,g[data-node]:not(.dim) polygon,
+g[data-node]:not(.dim) path.shape{stroke:var(--accent);stroke-width:2}
+g[data-edge]:not(.dim) path,g[data-edge]:not(.dim) line{stroke:var(--accent)}
+g[data-edge]:not(.dim) polygon,g[data-edge]:not(.dim) marker path{fill:var(--accent)}
+
+.panes{display:grid;grid-template-columns:250px 1fr;gap:20px;margin-top:16px}
+.steps{border-right:1px solid var(--line);padding-right:14px}
+.phase{font:11px var(--mono);color:var(--muted);text-transform:none;margin:14px 0 6px}
+.phase:first-child{margin-top:0}
+.steps button{
+  display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;
+  padding:6px 8px;border-left:2px solid transparent;color:var(--muted);
+  font:13px/1.4 inherit;border-radius:0 3px 3px 0;
+}
+.steps button:hover{background:var(--card);color:var(--ink)}
+.steps button.on{border-left-color:var(--accent);color:var(--ink);font-weight:600;background:var(--card)}
+.steps .idx{font:11px var(--mono);margin-right:6px;color:var(--muted)}
+
+.detail h2{font-size:17px;margin:0 0 6px;letter-spacing:-.01em}
+.detail .sum{margin:0 0 12px;color:var(--muted)}
+.badges{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.badge{font:11px var(--mono);border:1px solid var(--line);border-radius:3px;padding:2px 7px;color:var(--muted)}
+.badge.where{border-color:var(--accent);color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:12px;overflow:hidden}
+.card .file{font:11px var(--mono);color:var(--muted);padding:7px 12px;border-bottom:1px solid var(--line)}
+.card pre{margin:0;padding:12px;overflow-x:auto}
+.card code{font:12.5px/1.6 var(--mono);white-space:pre}
+.rlabel{font:11px var(--mono);color:var(--muted);margin:0 0 6px}
+.result{padding:12px}
+.mock{font:12px var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:10px}
+.mock table{border-collapse:collapse;width:100%;font-size:11.5px}
+.mock th,.mock td{border:1px solid var(--line);padding:4px 7px;text-align:left}
+.mock th{color:var(--muted);font-weight:400}
+.mock .term{background:#111418;color:#e8eaed;border-radius:4px;padding:10px;font-size:11.5px}
+.mock .none{color:var(--muted)}
+
+@media(max-width:900px){
+  .panes{grid-template-columns:1fr;gap:14px}
+  .steps{border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px;display:flex;flex-wrap:wrap;gap:4px}
+  .phase{width:100%;margin:6px 0 2px}
+  .steps button{width:auto;border-left:0;border-bottom:2px solid transparent;padding:5px 8px}
+  .steps button.on{border-left:0;border-bottom-color:var(--accent)}
+  .counter{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd">
+    <h1>__TOPIC__</h1>
+    <span class="mode">__MODE__</span>
+  </div>
+
+  <div class="stage">
+    <div class="def"><!--__DEFINITION__--></div>
+    <div class="diagram" id="diagram"><!--__DIAGRAM__--></div>
+    <div class="grip" id="grip" title="드래그해서 다이어그램 크기 조절"></div>
+    <div class="remote">
+      <button id="prev">← 이전</button>
+      <button id="play" class="play">▶ 재생</button>
+      <button id="next">다음 →</button>
+      <div class="dots" id="dots"></div>
+      <span class="counter" id="counter"></span>
+    </div>
+  </div>
+
+  <div class="panes">
+    <nav class="steps" id="steps"></nav>
+    <article class="detail" id="detail"></article>
+  </div>
+</div>
+
+<script>
+const STEPS = /*__STEPS__*/[];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let cur = 0, timer = null;
+
+function buildSteps(){
+  let html = '', phase = null;
+  STEPS.forEach((s, i) => {
+    if (s.phase !== phase) { phase = s.phase; html += `<div class="phase">${esc(phase)}</div>`; }
+    html += `<button data-i="${i}"><span class="idx">${String(i+1).padStart(2,'0')}</span>${esc(s.title)}</button>`;
+  });
+  $('steps').innerHTML = html;
+  $('steps').querySelectorAll('button').forEach(b =>
+    b.onclick = () => { stop(); go(+b.dataset.i); });
+
+  $('dots').innerHTML = STEPS.map((_, i) => `<button class="dot" data-i="${i}"></button>`).join('');
+  $('dots').querySelectorAll('button').forEach(b =>
+    b.onclick = () => { stop(); go(+b.dataset.i); });
+}
+
+function highlight(s){
+  const nodes = s.nodes || [], edges = s.edges || [];
+  const all = nodes.length === 0 && edges.length === 0;
+  document.querySelectorAll('[data-node],[data-edge]').forEach(el => {
+    const n = el.getAttribute('data-node'), e = el.getAttribute('data-edge');
+    const on = all || (n && nodes.includes(n)) || (e && edges.includes(e));
+    el.classList.toggle('dim', !on);
+  });
+}
+
+function detail(s){
+  let h = `<h2>${esc(s.title)}</h2><p class="sum">${esc(s.summary)}</p><div class="badges">`;
+  if (s.where) h += `<span class="badge where">${esc(s.where)}</span>`;
+  if (s.lang)  h += `<span class="badge">${esc(s.lang)}</span>`;
+  h += '</div>';
+  if (s.code && s.code.trim()) {
+    h += '<div class="card">';
+    if (s.file) h += `<div class="file">${esc(s.file)}</div>`;
+    h += `<pre><code>${esc(s.code.trim())}</code></pre></div>`;
+  }
+  if (s.result && s.result.trim()) {
+    h += `<p class="rlabel">${esc(s.resultLabel || '이때 보이는 것')}</p>`;
+    h += `<div class="card result">${s.result}</div>`;
+  }
+  $('detail').innerHTML = h;
+}
+
+function go(i){
+  cur = Math.max(0, Math.min(STEPS.length - 1, i));
+  const s = STEPS[cur];
+  highlight(s);
+  detail(s);
+  $('steps').querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.i === cur));
+  $('dots').querySelectorAll('button').forEach(b => {
+    const i2 = +b.dataset.i;
+    b.className = 'dot' + (i2 === cur ? ' on' : i2 < cur ? ' done' : '');
+  });
+  $('prev').disabled = cur === 0;
+  $('next').disabled = cur === STEPS.length - 1;
+  $('counter').textContent = `${cur + 1} / ${STEPS.length}`;
+}
+
+function stop(){
+  clearInterval(timer); timer = null;
+  $('play').textContent = '▶ 재생';
+}
+function toggle(){
+  if (timer) return stop();
+  if (cur === STEPS.length - 1) go(0);
+  $('play').textContent = '⏸ 일시정지';
+  timer = setInterval(() => {
+    if (cur >= STEPS.length - 1) return stop();
+    go(cur + 1);
+  }, 2500);
+}
+
+const dia = $('diagram'), grip = $('grip');
+let dragged = false;
+
+function fitHeight(){
+  if (dragged) return;
+  const svg = dia.querySelector('svg');
+  if (!svg) return;
+  const vb = (svg.getAttribute('viewBox') || '0 0 4 3').trim().split(/[\s,]+/).map(Number);
+  const ratio = vb[3] && vb[2] ? vb[3] / vb[2] : 0.6;
+  dia.style.height = Math.round(Math.min(Math.max(dia.clientWidth * ratio, 140), 480)) + 'px';
+}
+
+grip.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  grip.setPointerCapture(e.pointerId);
+  grip.classList.add('on');
+  const y0 = e.clientY, h0 = dia.clientHeight;
+  const move = ev => {
+    dragged = true;
+    dia.style.height = Math.round(Math.min(Math.max(h0 + ev.clientY - y0, 120), 900)) + 'px';
+  };
+  const up = ev => {
+    grip.releasePointerCapture(ev.pointerId);
+    grip.classList.remove('on');
+    grip.removeEventListener('pointermove', move);
+    grip.removeEventListener('pointerup', up);
+  };
+  grip.addEventListener('pointermove', move);
+  grip.addEventListener('pointerup', up);
+});
+
+window.addEventListener('resize', fitHeight);
+
+$('prev').onclick = () => { stop(); go(cur - 1); };
+$('next').onclick = () => { stop(); go(cur + 1); };
+$('play').onclick = toggle;
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  { stop(); go(cur - 1); }
+  if (e.key === 'ArrowRight') { stop(); go(cur + 1); }
+  if (e.key === ' ') { e.preventDefault(); toggle(); }
+});
+
+const more = document.querySelector('.def .more');
+if (more) {
+  const t = document.createElement('button');
+  t.className = 'toggle';
+  t.textContent = '접기';
+  t.onclick = () => {
+    const hidden = more.classList.toggle('hide');
+    t.textContent = hidden ? '정의' : '접기';
+  };
+  document.querySelector('.def').appendChild(t);
+}
+
+buildSteps();
+fitHeight();
+go(0);
+</script>
+</body>
+</html>

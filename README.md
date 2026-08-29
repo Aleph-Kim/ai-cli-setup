@@ -7,6 +7,7 @@
 - `comment-style` — 코드 주석을 개인 고유 스타일(한글, WHY 중심)로 작성
 - `commit-message` — 커밋 메시지를 개인 고유 템플릿(`type: 한글 제목`)으로 초안 작성
 - `quiz` — 작업 내용 이해도 확인용 4지선다 퀴즈 생성
+- `eli5` — 주제를 "단계별 재생기" 형식의 인터랙티브 아티팩트로 시각화 (개념/구현 모드)
 - `task-observer` — 세션 중 작업을 관찰해 스킬 개선/신규 스킬 후보를 기록하는 메타 스킬 (rebelytics/one-skill-to-rule-them-all, CC BY 4.0)
 
 ## 설치 (다른 환경으로 이식)
