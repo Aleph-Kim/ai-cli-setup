@@ -2,16 +2,29 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET_DIR="${1:-$HOME/.claude/skills}"
 
-mkdir -p "$TARGET_DIR"
+if [ $# -gt 0 ]; then
+  TARGET_DIRS=("$@")
+else
+  TARGET_DIRS=(
+    "$HOME/.claude/skills"
+    "$HOME/.gemini/config/skills"
+  )
+fi
 
-for skill in "$SCRIPT_DIR"/skills/*/; do
-  name="$(basename "$skill")"
-  dest="$TARGET_DIR/$name"
-  if [ -e "$dest" ] && [ ! -L "$dest" ]; then
-    rm -rf "$dest"
-  fi
-  ln -sfn "$skill" "$dest"
-  echo "linked: $name -> $dest"
+for target_dir in "${TARGET_DIRS[@]}"; do
+  mkdir -p "$target_dir"
+  echo "==> Linking skills to $target_dir"
+
+  for skill in "$SCRIPT_DIR"/skills/*/; do
+    [ -d "$skill" ] || continue
+    name="$(basename "$skill")"
+    dest="$target_dir/$name"
+    if [ -e "$dest" ] && [ ! -L "$dest" ]; then
+      rm -rf "$dest"
+    fi
+    ln -sfn "$skill" "$dest"
+    echo "  linked: $name -> $dest"
+  done
 done
+

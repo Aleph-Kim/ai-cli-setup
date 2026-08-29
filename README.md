@@ -18,12 +18,14 @@ cd claude-skills
 ./install.sh
 ```
 
-`skills/` 하위의 각 스킬 디렉토리를 `~/.claude/skills/`에 심볼릭 링크로 연결합니다. 레포가 항상 원본이므로, 이후 스킬을 수정하면 레포에서 바로 반영됩니다.
+`skills/` 하위의 각 스킬 디렉토리를 `~/.claude/skills/` 및 `~/.gemini/config/skills/`에 심볼릭 링크로 연결합니다. 레포가 항상 원본이므로, 이후 스킬을 수정하면 레포에서 바로 반영됩니다.
 
-대상 디렉토리를 바꾸려면 인자로 지정하세요:
+대상 디렉토리를 직접 지정하려면 인자로 전달하세요:
 
 ```bash
 ./install.sh /path/to/skills
+# 또는 여러 경로 지정
+./install.sh /path/to/skills1 /path/to/skills2
 ```
 
 ## 새 스킬 추가
