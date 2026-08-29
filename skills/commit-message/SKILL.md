@@ -1,6 +1,7 @@
 ---
 name: commit-message
-description: Draft a git commit message using the user's fixed personal template (Korean, single-line `type: 제목`, no body) — the same template for every repository, not repo-specific detection. Use when the user asks to write, draft, or suggest a commit message ("커밋 메시지 만들어줘/작성해줘/제안해줘"). Drafts only — never runs git commit unless the user explicitly says to commit.
+description: >-
+  Draft a git commit message using the user's fixed personal template (Korean, single-line `type: 제목`, no body) — the same template for every repository, not repo-specific detection. Use when the user asks to write, draft, or suggest a commit message ("커밋 메시지 만들어줘/작성해줘/제안해줘"). Drafts only — never runs git commit unless the user explicitly says to commit.
 ---
 
 # Commit Message
