@@ -28,7 +28,7 @@ HTML 전체를 새로 작성하지 않는다. CSS, 재생 컨트롤, dot indicat
 ```bash
 mkdir -p /tmp/eli5-build
 # 1) definition.html, diagram.svg, steps.js 세 파일만 작성
-# 2) 셸에 주입
+# 2) 셸에 주입 (--accent 는 선택 사항. 미지정 시 주제 키워드 기반으로 최적 색상이 자동 선택됨)
 python3 <스킬경로>/scripts/build.py \
   --shell      <스킬경로>/assets/shell.html \
   --definition /tmp/eli5-build/definition.html \
@@ -36,8 +36,11 @@ python3 <스킬경로>/scripts/build.py \
   --steps      /tmp/eli5-build/steps.js \
   --topic      "헥사고날 아키텍처" \
   --mode       "개념 모드" \
+  --accent     "#d97706" \
   --out        /tmp/eli5-build/out.html
 ```
+
+- **색상 테마**: 주제 성격에 맞는 대표 색상 1개를 `--accent`로 넘기거나, 생략하면 `build.py`가 도메인 키워드(개발 도메인 우선: DB `#059669`, 보안 `#4f46e5`, 인프라 `#0891b2`, 아키텍처 `#d97706`, 프론트 `#7c3aed`, 저수준 `#475569`, 테스트/에러 `#e11d48`, 네트워크 `#2563eb` / 비개발 도메인: 자연 `#16a34a`, 과학 `#0284c7`, 경제 `#b45309`, 의학 `#be123c`)를 분석해 자동으로 배정한다.
 
 셸을 열어 읽거나 내용을 다시 출력할 필요가 없다. 마커와 CSS 클래스는 아래에 다 적혀 있다. 셸을 고쳐야 할 만큼 구조가 안 맞는 주제라면, 고치기 전에 사용자에게 먼저 말한다.
 

@@ -1,6 +1,6 @@
-# claude-skills
+# Skills
 
-개인 Claude Code 스킬을 보관하고, 다른 개발 환경으로 쉽게 이식하기 위한 레포입니다.
+개인 AI 스킬을 보관하고, 다른 개발 환경으로 쉽게 이식하기 위한 레포입니다.
 
 ## 포함된 스킬
 
@@ -15,7 +15,7 @@
 
 ```bash
 git clone <this-repo-url>
-cd claude-skills
+cd skills
 ./install.sh
 ```
 
