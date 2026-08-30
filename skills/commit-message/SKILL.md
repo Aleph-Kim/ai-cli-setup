@@ -10,7 +10,7 @@ Draft a commit message for the current changes using the user's fixed personal t
 
 **Personal template:**
 - Format: `type: 한글 제목` — single line, no body, no bullets, no trailing period.
-- Type vocabulary, most-used first: `feat` (new feature), `fix` (bug fix), `refactor` (restructuring without behavior change), `chore` (misc/config/deps), `design` (styling/UI-only changes), `ci` (CI/CD config). Pick whichever fits the diff; don't invent other types.
+- Type vocabulary, most-used first: `feat` (new feature), `fix` (bug fix), `refactor` (restructuring without behavior change), `perf` (performance improvement), `docs` (documentation/README), `design` (styling/UI-only changes), `test` (test code), `remove` (deleting files/code), `ci` (CI/CD config), `chore` (misc/config/deps). Pick whichever fits the diff; don't invent other types.
 - Title in Korean, descriptive noun-phrase style (not a full sentence, no trailing "~합니다"), e.g. `fix: 관리자 수강 정보 상세 화면 데이터 표시 오류 수정`, `feat: 사용자 정보 반환 시 수강 비밀번호 설정 여부 필드 추가`.
 - Keep the title short and high-level — name the target and what changed, then stop. Leave out implementation specifics ("드래그와 동일하게", "…을 통해"), comparisons, secondary qualifiers, and the why/how. Aim for roughly the length of the examples above.
 - Use plain everyday verbs: 추가 / 수정 / 변경 / 삭제 / 정리. Avoid showier synonyms like 전환·도입.
