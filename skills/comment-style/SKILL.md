@@ -13,21 +13,35 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
 
 2. **Placement: directly above the code it explains**, not trailing — except for rule 3c. One comment sits immediately before the block, statement, or method it describes.
 
-3. **Comment shapes, chosen by line count and context, not by content type.** Both end in a noun phrase (명사형 종결: "~저장", "~조회", "~폴백", "~발송", "~목록") — never a verb-ending full sentence like "~한다/~된다", even in the block form. **No trailing period** — a noun phrase doesn't take one; this holds even when a comment packs two clauses separated by a mid-sentence period (e.g. "큐에 쌓인 알림을 일괄 전송, 만료된(410/404) 구독은 자동 삭제").
-   - **(a) Single-line `//` — the default.** Used for almost everything: above a statement/block inside a method body, or above a method declaration when the summary fits on one line. Add a short parenthetical when one extra fact is worth noting.
+3. **Comment shapes, chosen by placement and context.** Both end in a noun phrase (명사형 종결: "~저장", "~조회", "~폴백", "~발송", "~목록") — never a verb-ending full sentence like "~한다/~된다", even in the block form. **No trailing period** — a noun phrase doesn't take one; this holds even when a comment packs two clauses separated by a mid-sentence period (e.g. "큐에 쌓인 알림을 일괄 전송, 만료된(410/404) 구독은 자동 삭제").
+   - **(a) Single-line `//` — method body and statement blocks.** Used for statements, logic branches, and blocks inside a method or function body.
      ```php
      // 가수 조회 및 저장 (이미지 업로드는 신규 생성 시에만)
      // 큐에 쌓인 알림을 일괄 전송, 만료된(410/404) 구독은 자동 삭제
      ```
-   - **(b) `/** */` block — only above a method/property declaration, only when one line isn't enough.**
-     - A genuinely non-obvious constraint that needs two lines (rare) — keep it as terse noun-style statements, not a narrated essay:
+   - **(b) `/** */` doc block — ALWAYS used above method, function, and property declarations.**
+     - Any comment placed directly above a method, function, or property declaration must use the doc comment syntax (`/** ... */`), regardless of whether it is a single line or multi-line:
        ```php
+       /**
+        * 가수 조회 및 저장 (이미지 업로드는 신규 생성 시에만)
+        */
+       public function findOrCreateArtist(...)
+
        /**
         * 멜론 검색 페이지 스크래핑으로 실제 songId 파싱 후 melonapp:// 딥링크 생성
         * 멜론 앱 스킴은 songId 기반 재생만 지원 (검색 미지원)
         */
+       public function createMelonDeepLink(...)
        ```
-     Never add `@param`/`@return` tags — those only ever appear in framework-generated boilerplate in this codebase, never in hand-written code. Pure prose only.
+     - `@param`, `@return` 등의 태그는 기본적으로 생략(순수 한국어 산문 우선)하되, **파라미터명이나 반환 구조만으로 직관적인 이해가 어려울 경우**에는 필요한 태그를 선별적으로 추가:
+       ```php
+       /**
+        * 취약점 데이터를 분석하여 간결하고 자연스러운 한국어 설명 생성
+        *
+        * @return array{definition: string, environment: string, attack_path: string, remediation: string}
+        */
+       public function analyze(Vulnerability $vulnerability, ?Target $target = null): array
+       ```
    - **(c) Trailing inline comment — only for a one-word/short clarification of a literal value** on the same line (e.g. a constant or a magic number).
      ```php
      private const MUSIC_CACHE_TTL = 604800; // 7일
@@ -50,11 +64,11 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
 
 5. **Sparse by default.** Comment only at real decision points: business-logic branches, non-obvious external-system constraints, or short workarounds. Most functions and most lines carry zero comments — don't add one to every method just because you touched it.
 
-6. **No banners, no markers, no boilerplate.** No `====`/`----`/`#region` section dividers, no `TODO`/`FIXME` tags, no file- or class-level doc comments, no `@param`/`@return` PHPDoc-style tags. Just the comment types in rule 3.
+6. **No banners, no markers, no boilerplate.** No `====`/`----`/`#region` section dividers, no `TODO`/`FIXME` tags, no file- or class-level doc comments. For `@param`/`@return`, use only when non-obvious parameter or return shape clarification is genuinely needed per rule 3b. Just the comment types in rule 3.
 
 ## When applying this in a non-PHP codebase
 
-Keep the same shapes and the same judgment (noun-phrase ending, WHY/caller-context over WHAT, sparse, Korean), just swap the syntax for the language's native comment form — `//` in JS/TS/Go/Java, `#` in Python/Ruby, `<!-- -->` in HTML/blade when a block explanation is genuinely warranted. Use that language's own doc-comment block syntax for shape (b) (e.g. `/** */` in JSDoc, `"""..."""` in Python) but never fill it with that language's own tag conventions (`@param`, `:param:`, etc.) — keep it plain noun-phrase prose.
+Keep the same shapes and the same judgment (noun-phrase ending, WHY/caller-context over WHAT, sparse, Korean), just swap the syntax for the language's native comment form — `//` in JS/TS/Go/Java, `#` in Python/Ruby, `<!-- -->` in HTML/blade when a block explanation is genuinely warranted. Use that language's own doc-comment block syntax for shape (b) (e.g. `/** */` in JSDoc/TSDoc, `"""..."""` in Python), adding `@param`/`@returns` tags only when type/parameter clarification is genuinely non-obvious.
 
 ## Steps
 
