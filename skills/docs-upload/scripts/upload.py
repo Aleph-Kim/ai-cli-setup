@@ -32,9 +32,18 @@ def load_env_file(filepath: pathlib.Path) -> dict:
 
 
 import http.cookiejar
+import ssl
 
 cookie_jar = http.cookiejar.CookieJar()
-opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
+try:
+    ssl_context = ssl.create_default_context()
+    if not ssl_context.get_ca_certs() and not (ssl.get_default_verify_paths().openssl_cafile and os.path.exists(ssl.get_default_verify_paths().openssl_cafile)):
+        ssl_context = ssl._create_unverified_context()
+except Exception:
+    ssl_context = ssl._create_unverified_context()
+
+https_handler = urllib.request.HTTPSHandler(context=ssl_context)
+opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar), https_handler)
 
 
 def get_xsrf_token() -> str:
