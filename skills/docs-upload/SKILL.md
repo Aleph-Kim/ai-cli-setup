@@ -46,22 +46,28 @@ DOCS_PASSWORD=서버_관리자_비밀번호_또는_API키
 4. 사용자가 `--category "카테고리명"`으로 직접 전달한 경우 해당 카테고리를 최우선 사용(또는 생성)합니다.
 5. `POST /admin/visuals`: 결정된 카테고리와 함께 문서를 최종 등록합니다.
 
+### 1-4. 슬러그(URL Slug) 자동 생성 (필수)
+- **슬러그 생성 원칙**: 에이전트는 문서 주제와 내용을 파악하여 **반드시 의미 있고 명확한 영문 kebab-case 슬러그(예: `watch-app-languages`, `hexagonal-architecture`, `vue-reactivity-system` 등)를 스스로 생성**하여 `--slug` 인자로 전달합니다.
+- 한글 제목의 경우 서버에서 비-ASCII 문자가 제거되어 무작위 8자리 난수 해시(예: `r0runxso`)로 폴백되므로, **에이전트는 `--slug` 인자를 절대로 생략하지 않고 항상 직접 생성하여 전달**합니다.
+
 ```bash
-# 기본 실행 (자동 상위 카테고리 분류 및 등록)
+# 기본 실행 (에이전트가 생성한 영문 슬러그 필수 전달)
 python3 <스킬경로>/scripts/upload.py \
-  --file /tmp/eli5-build/out.html
+  --file /tmp/eli5-build/out.html \
+  --slug "watch-app-dev-languages"
 
 # 필요 시 카테고리 명시 지정
 python3 <스킬경로>/scripts/upload.py \
   --file /tmp/eli5-build/out.html \
+  --slug "watch-app-dev-languages" \
   --category "웹/프론트엔드"
 ```
 
-#### 옵션 (필요 시 지정):
-- `--category "카테고리명"`: 카테고리 강제 지정 (존재하지 않으면 자동 생성)
+#### 옵션:
+- `--slug "url-slug"`: **(필수 전달)** 에이전트가 문서 주제를 분석하여 생성한 영문 kebab-case 슬러그
+- `--category "카테고리명"`: 카테고리 강제 지정 (생략 시 상위 대분류 자동 매칭/생성)
 - `--title "제목"`: 제목 수동 지정 (생략 시 HTML `<title>`에서 자동 추출)
 - `--description "설명"`: 설명 수동 지정 (생략 시 eli5 `<p class="one">`에서 자동 추출)
-- `--slug "url-slug"`: URL 슬러그 지정 (생략 시 제목 기반 자동 생성)
 - `--url "http://..."`: 서버 URL 오버라이드
 - `--key "비밀번호"`: 비밀번호 오버라이드
 
