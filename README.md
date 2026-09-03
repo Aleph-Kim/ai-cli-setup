@@ -25,7 +25,7 @@ AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 �
 - `project-prompt` — 프로젝트 주제 기반 기본 세팅 프롬프트 생성
 - `taste-skill` — 랜딩/마케팅 페이지의 디자인 방향 결정 및 AI 특유의 템플릿 티(AI Slop) 차단
 - `web-design-guidelines` — 인터랙션·폼·접근성·성능 등 프로덕션 수준 프론트엔드 품질 체크리스트 강제
-- `21st-dev-components` — 21st.dev 카탈로그 기반 React/Tailwind/shadcn 컴포넌트 및 마케팅 블록 도입 규칙
+- `hyperui` — HyperUI(hyperui.dev) 스타일의 순수 HTML5 + Tailwind CSS 전용 컴포넌트 마크업 가이드 (React/JSX 배제, 시맨틱 HTML 우선)
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: web-design-guidelines
-description: Production-grade web interface engineering checklist (Vercel Web Interface Guidelines). Enforces the mechanical rules that separate a demo from a shipped product - 16px mobile inputs to stop iOS Safari zoom, 44px touch targets, no `transition: all`, never disabling submit before input, never blocking paste, visible `:focus-visible` rings, WAI-ARIA keyboard flows, `tabular-nums` for comparable numbers, `prefers-reduced-motion`. Trigger before writing or reviewing any web UI component, form, modal, animation, or interactive element, and when the user asks for an accessibility, interaction, or frontend-quality pass. Pair with taste-skill (aesthetic direction) and 21st-dev-components (component sourcing).
+description: Production-grade web interface engineering checklist (Vercel Web Interface Guidelines). Enforces the mechanical rules that separate a demo from a shipped product - 16px mobile inputs to stop iOS Safari zoom, 44px touch targets, no `transition: all`, never disabling submit before input, never blocking paste, visible `:focus-visible` rings, WAI-ARIA keyboard flows, `tabular-nums` for comparable numbers, `prefers-reduced-motion`. Trigger before writing or reviewing any web UI component, form, modal, animation, or interactive element, and when the user asks for an accessibility, interaction, or frontend-quality pass. Pair with taste-skill (aesthetic direction) and hyperui (HTML + Tailwind markup conventions).
 ---
 
 # Web Interface Guidelines
