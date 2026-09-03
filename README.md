@@ -1,34 +1,60 @@
-# Skills
+# ai-cli-setup
 
-개인 AI 스킬을 보관하고, 다른 개발 환경으로 쉽게 이식하기 위한 레포입니다.
+개인 AI 코딩 환경(Claude Code, AGY CLI)의 전역 규칙(Rules), 상태표시줄(Statusline), 스킬(Skills)을 통합 보관하고 새 환경에 안전하게 배포하기 위한 저장소입니다.
 
-## 포함된 스킬
+## 구성
 
+### 1. Rules (`rules/`)
+AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 관리합니다.
+- 원본: `rules/RULES.md`
+- 배포: `~/.claude/CLAUDE.md` 및 `~/.gemini/GEMINI.md`로 심볼릭 링크 연결
+- Think Before Coding, Simplicity First, Surgical Changes, 한국어 응답 원칙 등 포함
+
+### 2. Statusline (`statusline/`)
+터미널 하단에 모델명, Quota(5시간/주간 사용량 및 리셋 시각) 등을 표시하는 커스텀 상태표시줄 스크립트입니다.
+- `statusline/agy-statusline.js` -> `~/.gemini/antigravity-cli/statusline.js`
+- `statusline/claude-statusline.sh` -> `~/.claude/statusline.sh`
+
+### 3. Skills (`skills/`)
 - `comment-style` — 코드 주석을 개인 고유 스타일(한글, WHY 중심)로 작성
 - `commit-message` — 커밋 메시지를 개인 고유 템플릿(`type: 한글 제목`)으로 초안 작성
 - `quiz` — 작업 내용 이해도 확인용 4지선다 퀴즈 생성
 - `eli5` — 주제를 "단계별 재생기" 형식의 인터랙티브 아티팩트로 시각화 (개념/구현 모드)
 - `docs-upload` — eli5 결과물 또는 HTML 시각화 문서를 docs 아카이브 서버에 업로드/등록
-- `task-observer` — 세션 중 작업을 관찰해 스킬 개선/신규 스킬 후보를 기록하는 메타 스킬 (rebelytics/one-skill-to-rule-them-all, CC BY 4.0)
+- `task-observer` — 세션 중 작업을 관찰해 스킬 개선/신규 스킬 후보를 기록하는 메타 스킬
+- `project-prompt` — 프로젝트 주제 기반 기본 세팅 프롬프트 생성
+- `explain_me` — 시스템 구조 SVG 아키텍처 다이어그램 및 ELI5 분석
 
-## 설치 (다른 환경으로 이식)
+---
+
+## 설치 및 배포
 
 ```bash
-git clone <this-repo-url>
-cd skills
+git clone https://github.com/Aleph-Kim/ai-cli-setup.git
+cd ai-cli-setup
 ./install.sh
 ```
 
-`skills/` 하위의 각 스킬 디렉토리를 `~/.claude/skills/` 및 `~/.gemini/config/skills/`에 심볼릭 링크로 연결합니다. 레포가 항상 원본이므로, 이후 스킬을 수정하면 레포에서 바로 반영됩니다.
+### 안전 장치 (백업 및 확인)
+`./install.sh` 실행 시 이미 대상 경로에 일반 파일이나 다른 설정이 존재하면:
+1. 기존 설정 파일 경로(`file exists: ...`)를 출력합니다.
+2. `기존 파일을 백업하고 덮어쓰시겠습니까? [y/N]` 확인을 거칩니다.
+3. `y` 입력 시 기존 파일은 해당 디렉토리의 `backup/` 폴더(`{dir}/backup/{file}.bak_YYYYMMDDHHMMSS`)로 백업된 뒤 심볼릭 링크로 교체됩니다. (`n` 입력 시 기존 설정 유지)
+4. 이미 이 저장소의 원본을 가리키는 링크는 `already linked`로 통과합니다.
 
-대상 디렉토리를 직접 지정하려면 인자로 전달하세요:
+### 옵션 플래그
 
 ```bash
-./install.sh /path/to/skills
-# 또는 여러 경로 지정
-./install.sh /path/to/skills1 /path/to/skills2
+# 질문 없이 즉시 자동 백업 후 심볼릭 링크 적용
+./install.sh -y
+
+# 특정 카테고리만 설치
+./install.sh --rules-only       # 규칙(rules)만 배포
+./install.sh --statusline-only  # 상태표시줄(statusline)만 배포
+./install.sh --skills-only      # 스킬(skills)만 배포
 ```
 
-## 새 스킬 추가
-
-`skills/` 아래에 스킬 폴더(SKILL.md 포함)를 추가하고 `./install.sh`를 다시 실행하면 됩니다.
+## 새로운 설정 또는 스킬 추가
+- `rules/`: 전역 프롬프트 지침 추가 및 수정
+- `statusline/`: 상태표시줄 포맷 또는 로직 수정
+- `skills/`: 새 스킬 디렉토리(`SKILL.md` 포함) 추가 후 `./install.sh` 재실행
