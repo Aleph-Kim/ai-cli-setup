@@ -59,55 +59,68 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# 기존 설정 유실 방지를 위한 확인 및 백업 후 심볼릭 링크 연결
+# 백업은 각 CLI 홈 바로 아래로 모은다 (skills 하위에 남으면 스킬로 오인식됨)
+backup_root() {
+  case "$1" in
+    "$HOME/.claude/"*) echo "$HOME/.claude/backup" ;;
+    "$HOME/.gemini/"*) echo "$HOME/.gemini/backup" ;;
+    *) echo "$(dirname "$1")/backup" ;;
+  esac
+}
+
+# 이미 동일 원본을 가리키는 링크면 백업 대상에서 제외
+needs_backup() {
+  local src="$1"
+  local dest="$2"
+
+  if [ -L "$dest" ] && [ "$(readlink "$dest" || true)" = "$src" ]; then
+    return 1
+  fi
+
+  [ -e "$dest" ] || [ -L "$dest" ]
+}
+
+confirm_overwrite() {
+  if [ "$AUTO_CONFIRM" = true ]; then
+    return 0
+  fi
+
+  local reply
+  # 터미널 대화형 입력과 파이프라인(비대화형) 입력 모두 지원
+  if [ -t 0 ]; then
+    read -r -p "  기존 파일을 백업하고 덮어쓰시겠습니까? [y/n]: " reply || reply="n"
+  else
+    read -r reply || reply="n"
+  fi
+
+  [[ "$reply" =~ ^[yY]$ ]]
+}
+
 safe_link() {
   local src="$1"
   local dest="$2"
+  local overwrite="$3"
 
   if [ ! -e "$src" ]; then
     echo "  source not found: $src" >&2
     return 1
   fi
 
-  local dest_dir
-  dest_dir="$(dirname "$dest")"
-  mkdir -p "$dest_dir"
+  mkdir -p "$(dirname "$dest")"
 
-  # 이미 동일 원본을 가리키고 있으면 재링크 및 백업 생략
-  if [ -L "$dest" ]; then
-    local current_target
-    current_target="$(readlink "$dest" || true)"
-    if [ "$current_target" = "$src" ]; then
-      echo "  already linked: $dest"
-      return 0
-    fi
+  if [ -L "$dest" ] && [ "$(readlink "$dest" || true)" = "$src" ]; then
+    echo "  already linked: $dest"
+    return 0
   fi
 
   if [ -e "$dest" ] || [ -L "$dest" ]; then
-    echo "  file exists: $dest"
-
-    if [ "$AUTO_CONFIRM" = true ]; then
-      confirm="y"
-    else
-      # 터미널 대화형 입력과 파이프라인(비대화형) 입력 모두 지원
-      if [ -t 0 ]; then
-        read -r -p "  기존 파일을 백업하고 덮어쓰시겠습니까? [y/N]: " confirm || confirm="n"
-      else
-        if read -r confirm; then
-          :
-        else
-          confirm="n"
-        fi
-      fi
-    fi
-
-    if [[ ! "$confirm" =~ ^[yY]$ ]]; then
+    if [ "$overwrite" != true ]; then
       echo "  skipped: $dest"
       return 0
     fi
 
-    # 대상 디렉토리 하위 backup 폴더에 타임스탬프 백업 저장
-    local backup_dir="$(dirname "$dest")/backup"
+    local backup_dir
+    backup_dir="$(backup_root "$dest")"
     mkdir -p "$backup_dir"
     local timestamp
     timestamp="$(date +%Y%m%d%H%M%S)"
@@ -120,34 +133,67 @@ safe_link() {
   echo "  linked: $dest -> $src"
 }
 
+# 카테고리 단위로 덮어쓰기 여부를 한 번만 확인 (인자: 라벨, "원본<TAB>대상" 목록)
+link_group() {
+  local label="$1"
+  shift
+
+  echo "==> Linking $label"
+
+  local pair src dest
+  local conflicts=()
+  for pair in "$@"; do
+    IFS=$'\t' read -r src dest <<<"$pair"
+    if needs_backup "$src" "$dest"; then
+      conflicts+=("$dest")
+    fi
+  done
+
+  local overwrite=true
+  if [ "${#conflicts[@]}" -gt 0 ]; then
+    echo "  기존 파일 ${#conflicts[@]}개:"
+    printf '    %s\n' "${conflicts[@]}"
+    if ! confirm_overwrite; then
+      overwrite=false
+    fi
+  fi
+
+  for pair in "$@"; do
+    IFS=$'\t' read -r src dest <<<"$pair"
+    safe_link "$src" "$dest" "$overwrite"
+  done
+}
+
 # 단일 원본 규칙 파일을 각 CLI(Claude, AGY) 기대 경로에 심볼릭 링크
 if [ "$INSTALL_RULES" = true ]; then
-  echo "==> Linking rules"
-  safe_link "$SCRIPT_DIR/rules/RULES.md" "$HOME/.claude/CLAUDE.md"
-  safe_link "$SCRIPT_DIR/rules/RULES.md" "$HOME/.gemini/GEMINI.md"
+  link_group "rules" \
+    "$SCRIPT_DIR/rules/RULES.md"$'\t'"$HOME/.claude/CLAUDE.md" \
+    "$SCRIPT_DIR/rules/RULES.md"$'\t'"$HOME/.gemini/GEMINI.md"
 fi
 
 # 상태표시줄 커스텀 스크립트 연결
 if [ "$INSTALL_STATUSLINE" = true ]; then
-  echo "==> Linking statusline"
-  safe_link "$SCRIPT_DIR/statusline/agy-statusline.js" "$HOME/.gemini/antigravity-cli/statusline.js"
-  safe_link "$SCRIPT_DIR/statusline/claude-statusline.sh" "$HOME/.claude/statusline.sh"
+  link_group "statusline" \
+    "$SCRIPT_DIR/statusline/agy-statusline.js"$'\t'"$HOME/.gemini/antigravity-cli/statusline.js" \
+    "$SCRIPT_DIR/statusline/claude-statusline.sh"$'\t'"$HOME/.claude/statusline.sh"
 fi
 
 # 각 CLI의 전역 스킬 디렉토리로 개별 스킬 폴더 심볼릭 링크
 if [ "$INSTALL_SKILLS" = true ]; then
-  echo "==> Linking skills"
   TARGET_SKILL_DIRS=(
     "$HOME/.claude/skills"
     "$HOME/.gemini/config/skills"
   )
 
+  skill_pairs=()
   for target_dir in "${TARGET_SKILL_DIRS[@]}"; do
-    echo "  target: $target_dir"
     for skill_path in "$SCRIPT_DIR"/skills/*/; do
       [ -d "$skill_path" ] || continue
-      skill_name="$(basename "$skill_path")"
-      safe_link "$skill_path" "$target_dir/$skill_name"
+      skill_pairs+=("$skill_path"$'\t'"$target_dir/$(basename "$skill_path")")
     done
   done
+
+  if [ "${#skill_pairs[@]}" -gt 0 ]; then
+    link_group "skills" "${skill_pairs[@]}"
+  fi
 fi
