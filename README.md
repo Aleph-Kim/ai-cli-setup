@@ -23,7 +23,9 @@ AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 �
 - `docs-upload` — eli5 결과물 또는 HTML 시각화 문서를 docs 아카이브 서버에 업로드/등록
 - `task-observer` — 세션 중 작업을 관찰해 스킬 개선/신규 스킬 후보를 기록하는 메타 스킬
 - `project-prompt` — 프로젝트 주제 기반 기본 세팅 프롬프트 생성
-- `explain_me` — 시스템 구조 SVG 아키텍처 다이어그램 및 ELI5 분석
+- `taste-skill` — 랜딩/마케팅 페이지의 디자인 방향 결정 및 AI 특유의 템플릿 티(AI Slop) 차단
+- `web-design-guidelines` — 인터랙션·폼·접근성·성능 등 프로덕션 수준 프론트엔드 품질 체크리스트 강제
+- `21st-dev-components` — 21st.dev 카탈로그 기반 React/Tailwind/shadcn 컴포넌트 및 마케팅 블록 도입 규칙
 
 ---
 
