@@ -1,11 +1,13 @@
 ---
 name: comment-style
-description: Write code comments using the user's fixed personal style (Korean, WHY-focused, sparse) — the same convention across all repositories, not language/repo-specific detection. Use whenever writing or adding new comments to code, or when the user asks to comment code in "my style" ("주석 스타일대로/평소처럼 달아줘", "주석 컨벤션 알려줘"). Does not apply to commit messages (see commit-message skill) or docs/markdown.
+description: Write code comments using the user's fixed personal style (Korean, WHY-focused, sparse) — the same convention across all repositories, not language/repo-specific detection. Trigger before any code edit that adds or touches comment characters (//, #, /** */, etc.), whenever writing or adding comments, or when the user asks to comment code in "my style" ("주석 스타일대로/평소처럼 달아줘", "주석 컨벤션 알려줘"). Does not apply to commit messages (see commit-message skill) or docs/markdown.
 ---
 
 # Comment Style
 
 Apply the user's fixed personal comment convention. It is a personal habit, not a project-specific rule — use it in any codebase, in whatever comment syntax that language provides (`//`, `#`, `<!-- -->`, etc.), keeping the same shape and judgment described below.
+
+**Activation checkpoint (artefact-triggered):** Load and consult this skill before any edit that writes or touches comment lines (`//`, `#`, `/*`, `/**`, `<!-- -->`). When editing code, comments often arise incidentally rather than by explicit user prompt; treat the act of inserting or modifying a comment line as the invocation checkpoint.
 
 ## Core rules
 
@@ -65,6 +67,8 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
 5. **Sparse by default.** Comment only at real decision points: business-logic branches, non-obvious external-system constraints, or short workarounds. Most functions and most lines carry zero comments — don't add one to every method just because you touched it.
 
 6. **No banners, no markers, no boilerplate.** No `====`/`----`/`#region` section dividers, no `TODO`/`FIXME` tags, no file- or class-level doc comments. For `@param`/`@return`, use only when non-obvious parameter or return shape clarification is genuinely needed per rule 3b. Just the comment types in rule 3.
+
+7. **Keep existing comments truthful.** When editing code, check nearby existing comments. If your change falsifies or alters what an existing comment asserts, update or remove that comment in the same edit — never leave a stale, misleading comment behind.
 
 ## When applying this in a non-PHP codebase
 
