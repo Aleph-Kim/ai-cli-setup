@@ -52,7 +52,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "unknown option: $1" >&2
+      echo "알 수 없는 옵션입니다: $1" >&2
       show_help
       exit 1
       ;;
@@ -102,20 +102,20 @@ safe_link() {
   local overwrite="$3"
 
   if [ ! -e "$src" ]; then
-    echo "  source not found: $src" >&2
+    echo "  원본 파일을 찾을 수 없습니다: $src" >&2
     return 1
   fi
 
   mkdir -p "$(dirname "$dest")"
 
   if [ -L "$dest" ] && [ "$(readlink "$dest" || true)" = "$src" ]; then
-    echo "  already linked: $dest"
+    echo "  이미 연결됨: $dest"
     return 0
   fi
 
   if [ -e "$dest" ] || [ -L "$dest" ]; then
     if [ "$overwrite" != true ]; then
-      echo "  skipped: $dest"
+      echo "  건너뜀: $dest"
       return 0
     fi
 
@@ -126,11 +126,11 @@ safe_link() {
     timestamp="$(date +%Y%m%d%H%M%S)"
     local backup_path="$backup_dir/$(basename "$dest").bak_${timestamp}"
     mv "$dest" "$backup_path"
-    echo "  backup: $dest -> $backup_path"
+    echo "  백업 완료: $dest -> $backup_path"
   fi
 
   ln -sfn "$src" "$dest"
-  echo "  linked: $dest -> $src"
+  echo "  연결 완료: $dest -> $src"
 }
 
 # 카테고리 단위로 덮어쓰기 여부를 한 번만 확인 (인자: 라벨, "원본<TAB>대상" 목록)
@@ -138,7 +138,7 @@ link_group() {
   local label="$1"
   shift
 
-  echo "==> Linking $label"
+  echo "==> $label 연결 중"
 
   local pair src dest
   local conflicts=()
@@ -164,18 +164,62 @@ link_group() {
   done
 }
 
+# settings.json에 statusLine 설정을 병합 (기존 키 보존)
+configure_statusline_setting() {
+  local target_json="$1"
+  local cmd_type="$2"
+  local cmd_val="$3"
+
+  mkdir -p "$(dirname "$target_json")"
+  if [ ! -f "$target_json" ]; then
+    echo "{}" > "$target_json"
+  fi
+
+  if command -v jq >/dev/null 2>&1; then
+    local current_type current_cmd
+    current_type="$(jq -r '.statusLine.type // empty' "$target_json" 2>/dev/null || true)"
+    current_cmd="$(jq -r '.statusLine.command // empty' "$target_json" 2>/dev/null || true)"
+    if [ "$current_type" = "$cmd_type" ] && [ "$current_cmd" = "$cmd_val" ]; then
+      echo "  이미 설정됨: $target_json"
+      return 0
+    fi
+
+    local tmp
+    tmp="$(mktemp)"
+    jq --arg type "$cmd_type" --arg cmd "$cmd_val" \
+      '.statusLine = {type: $type, command: $cmd}' "$target_json" > "$tmp" && mv "$tmp" "$target_json"
+  elif command -v node >/dev/null 2>&1; then
+    node -e '
+      const fs = require("fs");
+      const p = process.argv[1];
+      let d = {};
+      try { d = JSON.parse(fs.readFileSync(p, "utf-8")); } catch (e) {}
+      d.statusLine = { type: process.argv[2], command: process.argv[3] };
+      fs.writeFileSync(p, JSON.stringify(d, null, 2) + "\n", "utf-8");
+    ' "$target_json" "$cmd_type" "$cmd_val"
+  else
+    echo "  경고: jq 또는 node를 찾을 수 없어 $target_json 의 statusLine 설정을 건너뜁니다" >&2
+    return 1
+  fi
+  echo "  statusLine 설정 완료: $target_json"
+}
+
 # 단일 원본 규칙 파일을 각 CLI(Claude, AGY) 기대 경로에 심볼릭 링크
 if [ "$INSTALL_RULES" = true ]; then
-  link_group "rules" \
+  link_group "규칙" \
     "$SCRIPT_DIR/rules/RULES.md"$'\t'"$HOME/.claude/CLAUDE.md" \
     "$SCRIPT_DIR/rules/RULES.md"$'\t'"$HOME/.gemini/GEMINI.md"
 fi
 
-# 상태표시줄 커스텀 스크립트 연결
+# 상태표시줄 커스텀 스크립트 연결 및 CLI 설정 등록
 if [ "$INSTALL_STATUSLINE" = true ]; then
-  link_group "statusline" \
+  link_group "상태표시줄" \
     "$SCRIPT_DIR/statusline/agy-statusline.js"$'\t'"$HOME/.gemini/antigravity-cli/statusline.js" \
     "$SCRIPT_DIR/statusline/claude-statusline.sh"$'\t'"$HOME/.claude/statusline.sh"
+
+  echo "==> settings.json에 상태표시줄 설정 등록 중"
+  configure_statusline_setting "$HOME/.gemini/antigravity-cli/settings.json" "command" "node $HOME/.gemini/antigravity-cli/statusline.js"
+  configure_statusline_setting "$HOME/.claude/settings.json" "command" "bash $HOME/.claude/statusline.sh"
 fi
 
 # 각 CLI의 전역 스킬 디렉토리로 개별 스킬 폴더 심볼릭 링크
@@ -194,6 +238,6 @@ if [ "$INSTALL_SKILLS" = true ]; then
   done
 
   if [ "${#skill_pairs[@]}" -gt 0 ]; then
-    link_group "skills" "${skill_pairs[@]}"
+    link_group "스킬" "${skill_pairs[@]}"
   fi
 fi

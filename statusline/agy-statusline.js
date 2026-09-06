@@ -77,8 +77,22 @@ function main() {
   const currentQuotaKey = is3P ? '3p-5h' : 'gemini-5h';
   const weeklyQuotaKey = is3P ? '3p-weekly' : 'gemini-weekly';
 
-  const currentObj = quota[currentQuotaKey] || quota['gemini-5h'] || quota['3p-5h'];
-  const weeklyObj = quota[weeklyQuotaKey] || quota['gemini-weekly'] || quota['3p-weekly'];
+  let currentObj = quota[currentQuotaKey] || quota['gemini-5h'] || quota['3p-5h'];
+  let weeklyObj = quota[weeklyQuotaKey] || quota['gemini-weekly'] || quota['3p-weekly'];
+
+  // 고정 키 매핑 실패 시 버킷 이름 패턴 기반 폴백 탐색
+  if (!currentObj || !weeklyObj) {
+    for (const [key, obj] of Object.entries(quota)) {
+      if (!obj || typeof obj.remaining_fraction !== 'number') continue;
+      const lowerKey = key.toLowerCase();
+      if (!currentObj && (lowerKey.includes('5h') || lowerKey.includes('short') || lowerKey.includes('current'))) {
+        currentObj = obj;
+      }
+      if (!weeklyObj && (lowerKey.includes('week') || lowerKey.includes('7d') || lowerKey.includes('long'))) {
+        weeklyObj = obj;
+      }
+    }
+  }
 
   // 3. 현재 5시간 사용량 및 리셋 시각 계산
   let currentUsage = null;
