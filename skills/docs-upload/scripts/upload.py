@@ -325,11 +325,15 @@ def main():
     file_bytes = target_file.read_bytes()
     mime_type = mimetypes.guess_type(target_file.name)[0] or "text/html"
 
+    upload_slug = args.slug
+    if not upload_slug and target_file.stem.lower() not in ("out", "index"):
+        upload_slug = target_file.stem
+
     fields = {
         "title": topic,
         "description": desc,
         "category_id": category.get("id"),
-        "slug": args.slug,
+        "slug": upload_slug,
     }
 
     files = {

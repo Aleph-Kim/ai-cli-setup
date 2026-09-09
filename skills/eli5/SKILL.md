@@ -43,37 +43,40 @@ ARGUMENTS로 넘겨받은 주제가 여러 개(예: 쉼표 등으로 나열된 2
 
 HTML 전체를 새로 작성하지 않는다. CSS, 재생 컨트롤, dot indicator, 렌더 함수, 반응형 레이아웃은 `assets/shell.html`에 완성되어 있고 주제가 바뀌어도 동일하다. **주제마다 새로 만드는 것은 정의 블록, SVG 다이어그램, STEPS 배열 셋뿐이다.**
 
+각 문서마다 고유한 **영문 kebab-case 슬러그**(예: `hexagonal-architecture`, `vue-reactivity-system`, `oauth2-flow`)를 부여하여 중간 산출물과 최종 문서를 격리한다.
+
 ```bash
-mkdir -p /tmp/eli5-build
-# 1) definition.html, diagram.svg, steps.js 세 파일만 작성
-# 2) 셸에 주입 (--accent 는 선택 사항. 미지정 시 주제 키워드 기반으로 최적 색상이 자동 선택됨)
+# 1) 슬러그 결정 및 격리 디렉토리 생성 (예: slug = "hexagonal-architecture")
+mkdir -p /tmp/eli5-build/<slug>
+
+# 2) /tmp/eli5-build/<slug>/ 안에 definition.html, diagram.svg, steps.js 세 파일 작성
+
+# 3) 셸에 주입 (--accent 는 선택 사항. 미지정 시 주제 키워드 기반으로 최적 색상이 자동 선택됨)
 python3 <스킬경로>/scripts/build.py \
-  --shell      <스킬경로>/assets/shell.html \
-  --definition /tmp/eli5-build/definition.html \
-  --diagram    /tmp/eli5-build/diagram.svg \
-  --steps      /tmp/eli5-build/steps.js \
+  --slug       "<slug>" \
   --topic      "헥사고날 아키텍처" \
   --mode       "개념 모드" \
-  --accent     "#d97706" \
-  --out        /tmp/eli5-build/out.html
+  --accent     "#d97706"
+# 결과물: /tmp/eli5-build/<slug>.html 자동 생성
 ```
 
+- **디렉토리 격리**: 중간 파일들은 `/tmp/eli5-build/<slug>/` 디렉토리에 두어 여러 문서를 작업할 때 서로 덮어쓰지 않는다.
 - **색상 테마**: 주제 성격에 맞는 대표 색상 1개를 `--accent`로 넘기거나, 생략하면 `build.py`가 도메인 키워드(개발 도메인 우선: DB `#059669`, 보안 `#4f46e5`, 인프라 `#0891b2`, 아키텍처 `#d97706`, 프론트 `#7c3aed`, 저수준 `#475569`, 테스트/에러 `#e11d48`, 네트워크 `#2563eb` / 비개발 도메인: 자연 `#16a34a`, 과학 `#0284c7`, 경제 `#b45309`, 의학 `#be123c`)를 분석해 자동으로 배정한다.
 
 셸을 열어 읽거나 내용을 다시 출력할 필요가 없다. 마커와 CSS 클래스는 아래에 다 적혀 있다. 셸을 고쳐야 할 만큼 구조가 안 맞는 주제라면, 고치기 전에 사용자에게 먼저 말한다.
 
 ## 2. 전달 및 실행
 
-빌드 결과는 `/tmp/eli5-build/` 에만 두고, 사용자 작업 디렉토리에 임의의 HTML 파일을 남기지 않는다.
+빌드 결과는 `/tmp/eli5-build/` 에만 두고, 사용자 작업 디렉토리에 임의의 HTML 파일을 남기지 않는다. 각 문서는 고유한 슬러그(`<slug>.html`)를 가지므로 이전 결과물이 덮어써지지 않고 병렬로 보존된다.
 
 ### 2-1. 단일 파일인 경우: 브라우저 즉시 오픈
-- 빌드가 완료되면 터미널 명령(`open /tmp/eli5-build/out.html`)을 즉시 실행하여 사용자의 기본 브라우저에서 완성된 인터랙티브 HTML 문서가 바로 열리도록 한다.
-- 별도의 중간 마크다운 생성 없이 브라우저 오픈 완료 사실을 간결하게 안내한다.
+- 빌드가 완료되면 터미널 명령(`open /tmp/eli5-build/<slug>.html`)을 즉시 실행하여 사용자의 기본 브라우저에서 완성된 인터랙티브 HTML 문서가 바로 열리도록 한다.
+- 별도의 중간 마크다운 생성 없이 브라우저 오픈 완료 사실과 로컬 파일 링크(`[<slug>.html](file:///tmp/eli5-build/<slug>.html)`)를 간결하게 안내한다.
 
 ### 2-2. 다중 파일(개별 파일)인 경우: 통합 요약 마크다운(.md) 아티팩트 제공
-주제가 여러 개여서 독립된 여러 HTML 파일로 생성한 경우, 다음을 포함하는 **통합 마크다운(`.md`) 아티팩트를 작성하여 제공**한다:
-1. **로컬 웹 서버 가동**: 백그라운드 웹 서버(`python3 -m http.server <port> --directory /tmp/eli5-build`)를 가동하여 브라우저에서 즉시 열리는 `http://localhost:<port>/<filename>.html` 1-클릭 실행 링크를 제공
-2. **전체 주제 요약 맵**: 주제, 분류, 핵심 가치, 테마 색상 표
+주제가 여러 개여서 독립된 여러 HTML 파일로 생성한 경우, 각 문서별 고유 슬러그(`<slug1>.html`, `<slug2>.html` ...)로 생성하고 다음을 포함하는 **통합 마크다운(`.md`) 아티팩트를 작성하여 제공**한다:
+1. **로컬 웹 서버 가동**: 백그라운드 웹 서버(`python3 -m http.server <port> --directory /tmp/eli5-build`)를 가동하여 브라우저에서 즉시 열리는 `http://localhost:<port>/<slug>.html` 1-클릭 실행 링크 및 `file://` 직접 링크 제공
+2. **전체 주제 요약 맵**: 주제, 슬러그, 분류, 핵심 가치, 테마 색상 표
 3. **브라우저 즉시 열기 링크 테이블**: 통합 대시보드(`/`) 및 각 개념별 브라우저 직접 실행 링크
 4. **주제별 핵심 요약 블록**: 한 줄 정의, 핵심 규칙, 해결하려는 문제, 분석/변환 파이프라인 텍스트 다이어그램, 단계별 핵심 요약
 
@@ -255,4 +258,4 @@ SVG를 쓰기 전에 아래 표에서 형태를 고르고, 왜 그 형태인지 
 - 개념 모드인데 구축 순서 설명이 섞이지 않았는가
 - 모든 `nodes` / `edges` 값이 SVG에 실제로 존재하는가
 - SVG에서 글자가 노드 밖으로 나가거나 요소가 겹치지 않는가
-- 단일 파일인 경우 빌드 직후 기본 브라우저에서 HTML 문서를 즉시 오픈했는가 (`open /tmp/eli5-build/out.html`)
+- 단일 파일인 경우 빌드 직후 기본 브라우저에서 고유 슬러그 HTML 문서를 즉시 오픈했는가 (`open /tmp/eli5-build/<slug>.html`)

@@ -21,7 +21,7 @@ description: eli5 스킬 결과물 또는 완성된 단일 HTML 시각화 문서
 ## 1. 동작 순서
 
 ### 1-1. 업로드 대상 파일 확인
-1. **eli5 직후 업로드 요청인 경우**: `/tmp/eli5-build/out.html`을 기본 대상으로 사용합니다.
+1. **eli5 직후 업로드 요청인 경우**: 직전 eli5 작업에서 생성된 `/tmp/eli5-build/<slug>.html`(또는 가장 최근에 수정된 `/tmp/eli5-build/*.html`)을 기본 대상으로 사용합니다.
 2. **사용자가 특정 경로를 지정한 경우**: 해당 파일 경로를 사용합니다.
 3. 대상 파일이 없거나 불분명하면 업로드할 파일 경로를 사용자에게 확인합니다.
 
@@ -59,14 +59,14 @@ DOCS_PASSWORD=서버_관리자_비밀번호_또는_API키
 - 한글 제목의 경우 서버에서 비-ASCII 문자가 제거되어 무작위 8자리 난수 해시(예: `r0runxso`)로 폴백되므로, **에이전트는 `--slug` 인자를 절대로 생략하지 않고 항상 직접 생성하여 전달**합니다.
 
 ```bash
-# 기본 실행 (에이전트가 생성한 영문 슬러그 필수 전달)
+# 기본 실행 (에이전트가 생성한 영문 슬러그 전달 또는 파일명의 슬러그 활용)
 python3 <스킬경로>/scripts/upload.py \
-  --file /tmp/eli5-build/out.html \
+  --file /tmp/eli5-build/watch-app-dev-languages.html \
   --slug "watch-app-dev-languages"
 
 # 필요 시 카테고리 명시 지정
 python3 <스킬경로>/scripts/upload.py \
-  --file /tmp/eli5-build/out.html \
+  --file /tmp/eli5-build/watch-app-dev-languages.html \
   --slug "watch-app-dev-languages" \
   --category "웹/프론트엔드"
 ```

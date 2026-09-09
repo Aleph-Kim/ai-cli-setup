@@ -132,21 +132,63 @@ def resolve_accent(topic: str, custom_accent: str | None) -> str:
 
 
 def main():
+    default_shell = pathlib.Path(__file__).resolve().parent.parent / "assets" / "shell.html"
+
     p = argparse.ArgumentParser()
-    p.add_argument("--shell", required=True, help="assets/shell.html 경로")
-    p.add_argument("--diagram", required=True, help="생성한 SVG 파일 경로")
-    p.add_argument("--steps", required=True, help="생성한 STEPS 배열(JS 리터럴) 파일 경로")
-    p.add_argument("--definition", required=True, help="한 눈 정의 블록(HTML 조각) 파일 경로")
+    p.add_argument("--shell", default=str(default_shell), help="assets/shell.html 경로 (기본값: 스킬 assets/shell.html)")
+    p.add_argument("--slug", help="문서 고유 영문 kebab-case 슬러그 (예: hexagonal-architecture). --out 미지정 시 /tmp/eli5-build/<slug>.html 로 출력")
+    p.add_argument("--dir", help="중간 산출물(definition.html, diagram.svg, steps.js)이 위치한 디렉토리. 미지정 시 --slug 기반 /tmp/eli5-build/<slug> 우선 탐색")
+    p.add_argument("--diagram", help="생성한 SVG 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
+    p.add_argument("--steps", help="생성한 STEPS 배열(JS 리터럴) 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
+    p.add_argument("--definition", help="한 눈 정의 블록(HTML 조각) 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
     p.add_argument("--topic", required=True)
     p.add_argument("--mode", required=True, choices=["개념 모드", "구현 모드"])
     p.add_argument("--accent", default=None, help="악센트 색상 hex (예: #059669). 미지정 시 주제 기반 자동 선택")
-    p.add_argument("--out", required=True)
+    p.add_argument("--out", default=None, help="최종 HTML 파일 경로 (미지정 시 /tmp/eli5-build/<slug>.html 로 자동 결정)")
     a = p.parse_args()
 
-    html = pathlib.Path(a.shell).read_text(encoding="utf-8")
-    svg = pathlib.Path(a.diagram).read_text(encoding="utf-8").strip()
-    steps = pathlib.Path(a.steps).read_text(encoding="utf-8").strip().rstrip(";")
-    define = pathlib.Path(a.definition).read_text(encoding="utf-8").strip()
+    # 1. 중간 산출물 디렉토리 탐색
+    base_dir = None
+    if a.dir:
+        base_dir = pathlib.Path(a.dir)
+    elif a.slug:
+        candidate = pathlib.Path(f"/tmp/eli5-build/{a.slug}")
+        if candidate.is_dir():
+            base_dir = candidate
+
+    # fallback: 만약 /tmp/eli5-build/<slug>가 없더라도 /tmp/eli5-build/ 에 중간 파일들이 있다면 사용
+    if not base_dir and pathlib.Path("/tmp/eli5-build").is_dir():
+        base_dir = pathlib.Path("/tmp/eli5-build")
+
+    # 2. 다이어그램, 스텝, 정의 파일 경로 결정
+    def resolve_input_file(cli_arg: str | None, filename: str) -> pathlib.Path:
+        if cli_arg:
+            return pathlib.Path(cli_arg)
+        if base_dir and (base_dir / filename).is_file():
+            return base_dir / filename
+        sys.exit(f"오류: '{filename}' 파일을 찾을 수 없습니다. --{filename.split('.')[0]} 또는 --dir / --slug 인자를 확인해주세요.")
+
+    diagram_path = resolve_input_file(a.diagram, "diagram.svg")
+    steps_path = resolve_input_file(a.steps, "steps.js")
+    definition_path = resolve_input_file(a.definition, "definition.html")
+
+    # 3. 셸 파일 확인
+    shell_path = pathlib.Path(a.shell)
+    if not shell_path.is_file():
+        sys.exit(f"오류: 셸 템플릿 파일을 찾을 수 없습니다: {shell_path}")
+
+    # 4. 출력 파일 경로 결정
+    if a.out:
+        out_path = pathlib.Path(a.out)
+    elif a.slug:
+        out_path = pathlib.Path(f"/tmp/eli5-build/{a.slug}.html")
+    else:
+        sys.exit("오류: --out 또는 --slug 인자 중 최소 하나는 반드시 지정해야 합니다.")
+
+    html = shell_path.read_text(encoding="utf-8")
+    svg = diagram_path.read_text(encoding="utf-8").strip()
+    steps = steps_path.read_text(encoding="utf-8").strip().rstrip(";")
+    define = definition_path.read_text(encoding="utf-8").strip()
 
     if not steps.startswith("["):
         sys.exit("STEPS 파일은 '[' 로 시작하는 JS 배열 리터럴이어야 합니다.")
@@ -176,10 +218,9 @@ def main():
     html = html.replace("__MODE__", a.mode)
     html = html.replace("__ACCENT__", accent_color)
 
-    out = pathlib.Path(a.out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(html, encoding="utf-8")
-    print(f"생성 완료: {out}  ({len(html):,} bytes, accent: {accent_color})")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(html, encoding="utf-8")
+    print(f"생성 완료: {out_path}  ({len(html):,} bytes, accent: {accent_color})")
 
 
 if __name__ == "__main__":
