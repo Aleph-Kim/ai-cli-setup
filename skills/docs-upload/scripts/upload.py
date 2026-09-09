@@ -137,30 +137,73 @@ def create_category(base_url: str, api_key: str, name: str) -> dict:
 
 
 # 도메인별 표준 상위 카테고리 매핑 규칙
+#
+# 대분류 이름과 키워드는 eli5 스킬의 분류표와 일치시킨다 (수동 동기화).
+#   원본: skills/eli5/scripts/build.py 의 DEV_DOMAIN_RULES / GENERAL_DOMAIN_RULES
+# eli5 는 색상 구분을 위해 "컴퓨터 사이언스" 등을 여러 규칙으로 쪼개지만,
+# 카테고리 관점에서는 하나이므로 여기서는 키워드를 대분류별로 합쳐 둔다.
+# 단, 이 스킬은 주제 + HTML 본문 앞부분까지 매칭하므로, 본문 상용어와 충돌하는
+# 지나치게 일반적인 단일 단어(test, error, log 등)는 제외한다.
 DOMAIN_TAXONOMY = {
-    "웹/프론트엔드": [
-        "css", "html", "dom", "javascript", "typescript", "react", "vue", "svelte",
-        "frontend", "프론트엔드", "브라우저", "렌더링", "ui", "ux", "웹 표준", "스타일"
+    "보안": [
+        "oauth", "jwt", "ssl", "tls", "토큰", "보안", "인증", "인가", "암호화",
+        "세션", "쿠키", "rbac", "cors", "csrf", "xss", "crypto", "비밀번호"
     ],
-    "네트워크/통신": [
-        "websocket", "웹소켓", "http", "https", "tcp", "udp", "ip", "socket",
-        "소켓", "네트워크", "network", "push", "웹푸시", "oauth", "인증", "보안", "security"
-    ],
-    "소프트웨어 아키텍처": [
-        "architecture", "아키텍처", "헥사고날", "클린 아키텍처", "ddd", "도메인 주도",
-        "디자인 패턴", "design pattern", "mvc", "msa", "마이크로서비스", "api 설계", "모듈"
+    "인공지능/머신러닝": [
+        "인공지능", "머신러닝", "machine learning", "딥러닝", "deep learning",
+        "신경망", "neural", "llm", "gpt", "트랜스포머", "transformer", "임베딩",
+        "embedding", "파인튜닝", "프롬프트", "prompt", "rag", "확산 모델", "diffusion",
+        "강화학습", "생성형", "생성 모델", "벡터 데이터베이스"
     ],
     "데이터베이스": [
         "database", "db", "sql", "nosql", "mysql", "postgresql", "sqlite",
-        "redis", "mongodb", "인덱스", "트랜잭션", "orm", "erd", "정규화"
+        "redis", "mongodb", "인덱스", "트랜잭션", "orm", "erd", "정규화", "샤딩", "캐시"
     ],
     "인프라/DevOps": [
         "docker", "도커", "container", "컨테이너", "kubernetes", "k8s", "ci/cd",
-        "jenkins", "github actions", "linux", "리눅스", "배포", "인프라", "devops", "클라우드", "aws"
+        "jenkins", "github actions", "linux", "리눅스", "배포", "인프라", "devops",
+        "클라우드", "aws", "gcp", "azure", "terraform", "serverless", "nginx"
+    ],
+    "소프트웨어 아키텍처": [
+        "architecture", "아키텍처", "헥사고날", "hexagonal", "클린 아키텍처", "ddd",
+        "도메인 주도", "디자인 패턴", "design pattern", "mvc", "msa", "마이크로서비스",
+        "api 설계", "모듈", "kafka", "카프카", "메시지 큐", "pub/sub", "saga", "cqrs", "이벤트 기반"
+    ],
+    "웹/프론트엔드": [
+        "css", "html", "dom", "javascript", "typescript", "react", "vue", "svelte",
+        "next.js", "frontend", "프론트엔드", "브라우저", "렌더링", "ui", "ux",
+        "웹 표준", "스타일", "상태관리", "redux", "tailwind", "webpack", "vite"
+    ],
+    "네트워크/통신": [
+        "websocket", "웹소켓", "http", "https", "tcp", "udp", "ip", "dns", "socket",
+        "소켓", "네트워크", "network", "push", "웹푸시", "rest", "restful", "grpc",
+        "graphql", "gateway", "게이트웨이", "패킷", "cdn", "proxy", "프록시"
     ],
     "컴퓨터 사이언스": [
-        "자료구조", "알고리즘", "algorithm", "os", "운영체제", "프로세스", "스레드",
-        "thread", "memory", "메모리", "동시성", "concurrency", "컴파일러"
+        "자료구조", "data structure", "알고리즘", "algorithm", "그리디", "greedy",
+        "동적 계획법", "다이나믹 프로그래밍", "dynamic programming", "백트래킹",
+        "분할 정복", "이진 탐색", "binary search", "bfs", "dfs", "다익스트라",
+        "최단 경로", "최소 신장 트리", "시간 복잡도", "빅오", "재귀", "recursion",
+        "메모이제이션", "정렬 알고리즘", "해시 테이블",
+        "os", "운영체제", "프로세스", "스레드", "thread", "메모리", "동시성",
+        "concurrency", "코루틴", "커널", "kernel", "컴파일러", "compiler", "포인터",
+        "임베디드", "embedded", "펌웨어", "아두이노", "arduino",
+        "테스트 코드", "단위 테스트", "tdd", "디버깅", "트러블슈팅", "스택 트레이스"
+    ],
+    "자연과학": [
+        "광합성", "생태", "지구", "기후", "날씨", "환경", "생물", "동물", "식물",
+        "우주", "원자", "양자", "물리", "화학", "상대성", "행성", "중력", "은하", "블랙홀"
+    ],
+    "의학/생명": [
+        "면역", "심장", "세포", "의학", "바이러스", "백신", "호르몬", "건강",
+        "의료", "소화", "혈액", "수면", "생명공학", "유전자", "단백질", "뇌과학"
+    ],
+    "경제/금융": [
+        "인플레이션", "금리", "환율", "주식", "경제", "투자", "은행", "화폐",
+        "부동산", "자본", "금융"
+    ],
+    "인문/사회": [
+        "역사", "철학", "음악", "미술", "문학", "사회", "법률", "헌법", "정치", "문화", "예술"
     ]
 }
 

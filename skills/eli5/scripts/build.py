@@ -2,10 +2,20 @@
 """셸 템플릿에 주제 · SVG · STEPS 배열 · 악센트 색상을 주입해 최종 HTML을 만든다."""
 import argparse, pathlib, re, sys
 
-# 개발/엔지니어링 특화 도메인 (1차 우선 매칭)
-DEV_COLOR_RULES = [
+# ─────────────────────────────────────────────────────────────────────────────
+# 도메인 분류표 (단일 출처)
+#
+# 각 항목: ("상위 대분류", "악센트 색상", [주제 키워드])
+#   - "상위 대분류" 이름은 docs-upload 스킬의 카테고리 체계와 반드시 일치시킨다.
+#     (skills/docs-upload/scripts/upload.py 의 DOMAIN_TAXONOMY 와 수동 동기화)
+#   - 색 구분을 위해 한 대분류가 여러 규칙으로 쪼개질 수 있다 (예: 컴퓨터 사이언스).
+#   - 위에서부터 첫 부분 문자열 매칭이 채택되므로, 좁은 주제를 먼저 둔다.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# 개발/엔지니어링 도메인 (1차 우선 매칭)
+DEV_DOMAIN_RULES = [
     (
-        "#4f46e5",  # Indigo: 보안 / 인증 / 인가 / 암호화 / 토큰
+        "보안", "#4f46e5",  # Indigo: 인증 / 인가 / 암호화 / 토큰
         [
             "auth", "oauth", "jwt", "ssl", "tls", "token", "보안", "인증", "인가",
             "암호화", "세션", "session", "쿠키", "cookie", "rbac", "cors", "csrf",
@@ -13,7 +23,17 @@ DEV_COLOR_RULES = [
         ]
     ),
     (
-        "#059669",  # Emerald: 데이터베이스 / 캐시 / 저장소 / 쿼리
+        "인공지능/머신러닝", "#db2777",  # Pink: LLM / 딥러닝 / 학습
+        [
+            "인공지능", "머신러닝", "machine learning", "딥러닝", "deep learning",
+            "신경망", "neural", "llm", "gpt", "트랜스포머", "transformer", "임베딩",
+            "embedding", "파인튜닝", "fine-tuning", "프롬프트", "prompt", "rag",
+            "확산 모델", "diffusion", "강화학습", "reinforcement learning",
+            "생성 모델", "생성형", "벡터 데이터베이스", "벡터 db"
+        ]
+    ),
+    (
+        "데이터베이스", "#059669",  # Emerald: DB / 캐시 / 저장소 / 쿼리
         [
             "db", "database", "sql", "rdbms", "nosql", "redis", "cache", "캐시",
             "postgres", "postgresql", "mysql", "mongodb", "sqlite", "인덱스", "index",
@@ -22,7 +42,7 @@ DEV_COLOR_RULES = [
         ]
     ),
     (
-        "#0891b2",  # Cyan: 클라우드 / DevOps / 인프라 / 컨테이너
+        "인프라/DevOps", "#0891b2",  # Cyan: 클라우드 / 컨테이너 / 배포
         [
             "docker", "k8s", "kubernetes", "도커", "쿠버네티스", "aws", "gcp", "azure",
             "cloud", "클라우드", "terraform", "ci/cd", "cicd", "nginx", "컨테이너",
@@ -30,7 +50,7 @@ DEV_COLOR_RULES = [
         ]
     ),
     (
-        "#d97706",  # Amber: 아키텍처 / 시스템 설계 / 메시징 / 큐
+        "소프트웨어 아키텍처", "#d97706",  # Amber: 시스템 설계 / 메시징 / 큐
         [
             "architecture", "아키텍처", "hexagonal", "헥사고날", "clean architecture",
             "클린", "ddd", "domain driven", "kafka", "카프카", "rabbitmq", "mq",
@@ -39,7 +59,7 @@ DEV_COLOR_RULES = [
         ]
     ),
     (
-        "#7c3aed",  # Violet: 프론트엔드 / 웹 / UI / 렌더링
+        "웹/프론트엔드", "#7c3aed",  # Violet: 웹 / UI / 렌더링
         [
             "react", "vue", "next.js", "nextjs", "svelte", "dom", "css", "html",
             "frontend", "프론트", "프론트엔드", "브라우저", "browser", "rendering",
@@ -47,7 +67,26 @@ DEV_COLOR_RULES = [
         ]
     ),
     (
-        "#475569",  # Slate: 저수준 / OS / 시스템 프로그래밍 / 메모리 / 임베디드
+        "네트워크/통신", "#2563eb",  # Blue: 프로토콜 / API
+        [
+            "network", "네트워크", "http", "https", "tcp", "udp", "ip", "dns",
+            "websocket", "웹소켓", "socket", "소켓", "rest", "restful", "api",
+            "grpc", "graphql", "gateway", "게이트웨이", "packet", "패킷", "cdn", "proxy", "프록시"
+        ]
+    ),
+    (
+        "컴퓨터 사이언스", "#0d9488",  # Teal: 자료구조 / 알고리즘
+        [
+            "알고리즘", "algorithm", "자료구조", "data structure", "그리디", "greedy",
+            "동적 계획법", "다이나믹 프로그래밍", "dynamic programming", "백트래킹",
+            "backtracking", "분할 정복", "divide and conquer", "이진 탐색", "binary search",
+            "bfs", "dfs", "다익스트라", "dijkstra", "최단 경로", "최소 신장 트리",
+            "시간 복잡도", "빅오", "big-o", "재귀", "recursion", "메모이제이션",
+            "memoization", "투 포인터", "슬라이딩 윈도우", "정렬 알고리즘", "해시 테이블"
+        ]
+    ),
+    (
+        "컴퓨터 사이언스", "#475569",  # Slate: 저수준 / OS / 메모리 / 임베디드
         [
             "memory", "메모리", "thread", "스레드", "process", "프로세스", "동시성",
             "concurrency", "async", "coroutine", "gc", "garbage collection", "커널",
@@ -57,46 +96,40 @@ DEV_COLOR_RULES = [
         ]
     ),
     (
-        "#e11d48",  # Rose: 테스트 / 디버깅 / 트러블슈팅 / 로깅 / 에러
+        "컴퓨터 사이언스", "#e11d48",  # Rose: 테스트 / 디버깅 / 트러블슈팅
         [
             "test", "테스트", "tdd", "mock", "debug", "디버그", "디버깅",
             "exception", "error", "에러", "예외", "logging", "로깅", "log", "로그",
             "monitoring", "모니터링", "sentry", "troubleshoot", "트러블슈팅", "장애"
         ]
     ),
-    (
-        "#2563eb",  # Blue: 네트워크 / 통신 / 프로토콜 / API
-        [
-            "network", "네트워크", "http", "https", "tcp", "udp", "ip", "dns",
-            "websocket", "웹소켓", "socket", "소켓", "rest", "restful", "api",
-            "grpc", "graphql", "gateway", "게이트웨이", "packet", "패킷", "cdn", "proxy", "프록시"
-        ]
-    ),
 ]
 
-# 일반 / 비개발 보조 도메인 (2차 매칭)
-GENERAL_COLOR_RULES = [
+# 일반 / 비개발 도메인 (2차 매칭)
+GENERAL_DOMAIN_RULES = [
     (
-        "#16a34a",  # Green: 자연 / 환경 / 생물 / 지구
+        "자연과학", "#16a34a",  # Green: 자연 / 환경 / 생물 / 지구
         ["비", "날씨", "광합성", "생태", "식물", "지구", "기후", "바다", "환경", "생물", "동물", "숲", "나무"]
     ),
     (
-        "#0284c7",  # Sky Blue: 물리 / 화학 / 과학 / 우주
+        "자연과학", "#0284c7",  # Sky Blue: 물리 / 화학 / 우주
         ["우주", "원자", "양자", "물리", "화학", "상대성", "행성", "중력", "빛", "별", "은하", "과학", "블랙홀"]
     ),
     (
-        "#b45309",  # Warm Amber: 경제 / 금융 / 비즈니스
+        "경제/금융", "#b45309",  # Warm Amber: 경제 / 금융 / 비즈니스
         ["인플레이션", "금리", "환율", "주식", "경제", "투자", "은행", "화폐", "돈", "부동산", "시장", "자본"]
     ),
     (
-        "#be123c",  # Crimson: 의학 / 인체 / 건강 / 생리학
-        ["면역", "뇌", "심장", "세포", "의학", "바이러스", "백신", "호르몬", "건강", "의료", "소화", "혈액", "수면"]
+        "의학/생명", "#be123c",  # Crimson: 의학 / 인체 / 건강 / 생명공학
+        ["면역", "뇌", "심장", "세포", "의학", "바이러스", "백신", "호르몬", "건강", "의료", "소화", "혈액", "수면", "생명공학", "유전자", "단백질"]
     ),
     (
-        "#8b5cf6",  # Purple: 인문 / 사회 / 예술 / 역사
+        "인문/사회", "#8b5cf6",  # Purple: 인문 / 사회 / 예술 / 역사
         ["역사", "철학", "음악", "미술", "문학", "사회", "법률", "헌법", "정치", "문화", "예술"]
     ),
 ]
+
+ALL_DOMAIN_RULES = DEV_DOMAIN_RULES + GENERAL_DOMAIN_RULES
 
 FALLBACK_PALETTE = [
     "#2563eb",  # Blue
@@ -110,28 +143,57 @@ FALLBACK_PALETTE = [
 ]
 
 
+def match_domain(topic: str):
+    """주제 키워드로 (대분류, 색상) 규칙을 찾는다. 매칭 실패 시 None."""
+    t = topic.lower()
+    for domain, color, keywords in ALL_DOMAIN_RULES:
+        if any(kw in t for kw in keywords):
+            return domain, color
+    return None
+
+
 def resolve_accent(topic: str, custom_accent: str | None) -> str:
-    """악센트 색상을 결정한다: 사용자 지정값 -> 개발 도메인 키워드 -> 일반 도메인 키워드 -> 해시 fallback"""
+    """악센트 색상을 결정한다: 사용자 지정값 -> 도메인 키워드 -> 해시 fallback"""
     if custom_accent:
         cleaned = custom_accent.strip()
         if re.match(r"^#(?:[0-9a-fA-F]{3}){1,2}$", cleaned):
             return cleaned.lower()
 
-    t = topic.lower()
-    for color, keywords in DEV_COLOR_RULES:
-        if any(kw in t for kw in keywords):
-            return color
-
-    for color, keywords in GENERAL_COLOR_RULES:
-        if any(kw in t for kw in keywords):
-            return color
+    matched = match_domain(topic)
+    if matched:
+        return matched[1]
 
     # 키워드가 없는 경우 결정론적 해시 분배
     idx = sum(ord(c) for c in topic) % len(FALLBACK_PALETTE)
     return FALLBACK_PALETTE[idx]
 
 
+def resolve_category(topic: str) -> str:
+    """주제의 상위 대분류를 반환한다 (docs-upload 카테고리 체계와 동일한 이름).
+    매칭 실패 시 빈 문자열."""
+    matched = match_domain(topic)
+    return matched[0] if matched else ""
+
+
+def category_colors() -> dict:
+    """상위 대분류 -> 대표 악센트 색상 (해당 대분류의 첫 규칙 색상).
+
+    docs 아카이브 서버의 카테고리별 색상은 이 표와 일치시킨다.
+    한 대분류가 여러 색을 쓰는 경우(예: 컴퓨터 사이언스 = 알고리즘/저수준/테스트)
+    카테고리 배지는 대표색 하나만 쓰고, 개별 문서의 내부 악센트는 주제에 따라 달라진다.
+    `python3 build.py --categories` 로 출력한다."""
+    out = {}
+    for domain, color, _ in ALL_DOMAIN_RULES:
+        out.setdefault(domain, color)
+    return out
+
+
 def main():
+    if "--categories" in sys.argv:
+        for name, color in category_colors().items():
+            print(f"{color}\t{name}")
+        return
+
     default_shell = pathlib.Path(__file__).resolve().parent.parent / "assets" / "shell.html"
 
     p = argparse.ArgumentParser()
@@ -198,6 +260,7 @@ def main():
         sys.exit('정의 파일에 <p class="one"> 한 문장 정의가 없습니다.')
 
     accent_color = resolve_accent(a.topic, a.accent)
+    category = resolve_category(a.topic)
 
     markers = (
         "<!--__DIAGRAM__-->",
@@ -221,6 +284,8 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html, encoding="utf-8")
     print(f"생성 완료: {out_path}  ({len(html):,} bytes, accent: {accent_color})")
+    if category:
+        print(f"상위 대분류: {category}   (docs-upload 업로드 시 --category \"{category}\" 로 전달)")
 
 
 if __name__ == "__main__":
