@@ -4,11 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>__TOPIC__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#ffffff; --ink:#111418; --muted:#6b7280;
   --line:#e5e7eb; --card:#f6f7f8; --accent:__ACCENT__;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
 body{
@@ -30,15 +33,14 @@ body{
 .def .more{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--line)}
 .def .more.hide{display:none}
 .def .more dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px}
-.def .more dt{font:11px var(--mono);color:var(--accent);white-space:nowrap}
-.def .more dd{margin:0;font-size:13px;line-height:1.5}
+.def .more dt{font:11px var(--mono);color:var(--accent);white-space:nowrap;line-height:20px}
+.def .more dd{margin:0;font-size:13px;line-height:20px}
 .def .toggle{
   position:absolute;top:8px;right:8px;background:var(--bg);border:1px solid var(--line);
   border-radius:3px;font:11px var(--mono);color:var(--muted);padding:2px 7px;cursor:pointer;
 }
-.def .toggle:hover{border-color:var(--accent);color:var(--accent)}
-.diagram{padding:8px 0 4px;overflow:hidden}
-.diagram svg{display:block;width:100%;height:100%}
+.diagram{padding:8px 0 4px}
+.diagram svg{display:block;width:100%;height:auto}
 .grip{height:12px;cursor:ns-resize;touch-action:none;position:relative}
 .grip::after{
   content:"";position:absolute;left:50%;top:5px;width:44px;height:3px;margin-left:-22px;
@@ -63,14 +65,9 @@ body{
 .counter{margin-left:auto;font:11px var(--mono);color:var(--muted)}
 
 
-/* SVG 하이라이트 */
+/* SVG 하이라이트: 비활성 요소만 dim 처리하여 Diagram Design 고유 미학 보존 */
 [data-node],[data-edge]{transition:opacity .15s}
-.dim{opacity:.25}
-g[data-node]:not(.dim) rect,g[data-node]:not(.dim) circle,
-g[data-node]:not(.dim) ellipse,g[data-node]:not(.dim) polygon,
-g[data-node]:not(.dim) path.shape{stroke:var(--accent);stroke-width:2}
-g[data-edge]:not(.dim) path,g[data-edge]:not(.dim) line{stroke:var(--accent)}
-g[data-edge]:not(.dim) polygon,g[data-edge]:not(.dim) marker path{fill:var(--accent)}
+.dim{opacity:.18}
 
 .panes{display:grid;grid-template-columns:250px 1fr;gap:20px;margin-top:16px}
 .steps{border-right:1px solid var(--line);padding-right:14px}
@@ -218,25 +215,16 @@ function toggle(){
 }
 
 const dia = $('diagram'), grip = $('grip');
-let dragged = false;
-
-function fitHeight(){
-  if (dragged) return;
-  const svg = dia.querySelector('svg');
-  if (!svg) return;
-  const vb = (svg.getAttribute('viewBox') || '0 0 4 3').trim().split(/[\s,]+/).map(Number);
-  const ratio = vb[3] && vb[2] ? vb[3] / vb[2] : 0.6;
-  dia.style.height = Math.round(Math.min(Math.max(dia.clientWidth * ratio, 140), 480)) + 'px';
-}
 
 grip.addEventListener('pointerdown', e => {
   e.preventDefault();
   grip.setPointerCapture(e.pointerId);
   grip.classList.add('on');
   const y0 = e.clientY, h0 = dia.clientHeight;
+  const svg = dia.querySelector('svg');
   const move = ev => {
-    dragged = true;
-    dia.style.height = Math.round(Math.min(Math.max(h0 + ev.clientY - y0, 120), 900)) + 'px';
+    dia.style.height = Math.max(h0 + ev.clientY - y0, 100) + 'px';
+    if (svg) svg.style.height = '100%';
   };
   const up = ev => {
     grip.releasePointerCapture(ev.pointerId);
@@ -247,8 +235,6 @@ grip.addEventListener('pointerdown', e => {
   grip.addEventListener('pointermove', move);
   grip.addEventListener('pointerup', up);
 });
-
-window.addEventListener('resize', fitHeight);
 
 $('prev').onclick = () => { stop(); go(cur - 1); };
 $('next').onclick = () => { stop(); go(cur + 1); };
@@ -272,7 +258,6 @@ if (more) {
 }
 
 buildSteps();
-fitHeight();
 go(0);
 </script>
 </body>
