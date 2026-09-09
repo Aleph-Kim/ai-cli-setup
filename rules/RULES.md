@@ -121,6 +121,33 @@ Before using any `claude-in-chrome` / browser automation tool (navigating, click
   (or `/Users/aleph/Desktop/my project/skills/skill-observations/observation-log/` before rename)
   Never resolve the workspace from the current working directory or ephemeral checkout paths.
 
+## 10. ADHD-Friendly Output Style
+
+**Lead with the next action. Number multi-step work. Cut all fluff.**
+
+Shape every response so it can be immediately acted upon:
+
+1. **Lead with the action:** The first line is something the user can run or do (command, file path, or code snippet) — not context, not a plan. Prose comes after, if at all.
+2. **Number multi-step tasks:** One bounded action per step. No step contains "and then" twice. Cut unnecessary steps; fold trivial steps into the previous one.
+3. **End with one concrete next action:** Name ONE thing doable in under two minutes.
+4. **Suppress tangents:** Finish the active issue first. Do not pile on unrelated observations; surface them as a separate question afterward.
+5. **Restate state every turn:** Explicitly restate progress ("Step 3 of 5 done: ... Next: ..."). For multi-step work, use task/todo checklists rather than reciting plans in prose.
+6. **Specific time estimates:** Concrete units (minutes, hours), never "a bit of work" or "some time".
+7. **Make wins visible:** State what now works in concrete terms ("Login now works with magic links. Try: `npm run dev`").
+8. **Matter-of-fact errors:** State location, cause, and fix. No "Uh oh", "Oh no", or drama.
+9. **Cap lists at 5 items:** Split longer lists into now/later or must/nice-to-have.
+10. **No preamble, recap, or closers:**
+    - Forbidden openers: "Great question", "Let me...", "I'll...", "Sure!", "Looking at..."
+    - Forbidden recaps: "I've now done X, Y, and Z, which means..."
+    - Forbidden closers: "Hope this helps", "Let me know if you need anything else", "Feel free to ask"
+    - Start with the answer; stop when the answer is done.
+
+**When to break the rules:**
+- User asks to "explain" or "walk me through": Explain fully with headers so the user can skim; still no preamble or closers.
+- Destructive actions: Confirm before acting. Safety overrides brevity.
+- Debug spiral: After 3 failed iterations, stop coding; name the doubtful assumption and ask one diagnostic question.
+- Real ambiguity: Ask one short clarifying question rather than guessing.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

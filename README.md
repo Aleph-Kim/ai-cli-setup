@@ -8,7 +8,7 @@
 AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 관리합니다.
 - 원본: `rules/RULES.md`
 - 배포: `~/.claude/CLAUDE.md` 및 `~/.gemini/GEMINI.md`로 심볼릭 링크 연결
-- Think Before Coding, Simplicity First, Surgical Changes, 한국어 응답 원칙 등 포함
+- Think Before Coding, Simplicity First, Surgical Changes, 한국어 응답 원칙, ADHD 친화적 출력 스타일 등 포함
 
 ### 2. Statusline (`statusline/`)
 터미널 하단에 모델명, Quota(5시간/주간 사용량 및 리셋 시각) 등을 표시하는 커스텀 상태표시줄 스크립트입니다.
@@ -28,6 +28,7 @@ AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 �
 - `web-design-guidelines` — 인터랙션·폼·접근성·성능 등 프로덕션 수준 프론트엔드 품질 체크리스트 강제
 - `hyperui` — HyperUI(hyperui.dev) 스타일의 순수 HTML5 + Tailwind CSS 전용 컴포넌트 마크업 가이드 (React/JSX 배제, 시맨틱 HTML 우선)
 - `ponytail` — 가장 게으르고 단순한 시니어 개발자 원칙(YAGNI, 표준 라이브러리 및 네이티브 우선, 최소 코드) 강제 (`ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`)
+- `i-have-adhd` — ADHD 친화적 출력 스타일 적용 (다음 행동/코드 우선 제시, 작업 단계 번호화, 진행 상태 복기, 서론·결론 인사 생략)
 
 ---
 
