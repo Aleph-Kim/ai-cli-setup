@@ -203,6 +203,7 @@ def main():
     p.add_argument("--diagram", help="생성한 SVG 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
     p.add_argument("--steps", help="생성한 STEPS 배열(JS 리터럴) 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
     p.add_argument("--definition", help="한 눈 정의 블록(HTML 조각) 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
+    p.add_argument("--links", help="참고 링크 블록(HTML 조각) 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
     p.add_argument("--topic", required=True)
     p.add_argument("--mode", required=True, choices=["개념 모드", "구현 모드"])
     p.add_argument("--accent", default=None, help="악센트 색상 hex (예: #059669). 미지정 시 주제 기반 자동 선택")
@@ -234,6 +235,13 @@ def main():
     steps_path = resolve_input_file(a.steps, "steps.js")
     definition_path = resolve_input_file(a.definition, "definition.html")
 
+    # links.html 은 선택 사항 — 검증된 링크가 하나도 없으면 아예 두지 않고, 그 경우 참고 링크 섹션도 통째로 빠진다.
+    links_path = None
+    if a.links:
+        links_path = pathlib.Path(a.links)
+    elif base_dir and (base_dir / "links.html").is_file():
+        links_path = base_dir / "links.html"
+
     # 3. 셸 파일 확인
     shell_path = pathlib.Path(a.shell)
     if not shell_path.is_file():
@@ -251,6 +259,7 @@ def main():
     svg = diagram_path.read_text(encoding="utf-8").strip()
     steps = steps_path.read_text(encoding="utf-8").strip().rstrip(";")
     define = definition_path.read_text(encoding="utf-8").strip()
+    links = links_path.read_text(encoding="utf-8").strip() if links_path else ""
 
     if not steps.startswith("["):
         sys.exit("STEPS 파일은 '[' 로 시작하는 JS 배열 리터럴이어야 합니다.")
@@ -258,6 +267,8 @@ def main():
         sys.exit("다이어그램 파일에 <svg> 요소가 없습니다.")
     if 'class="one"' not in define:
         sys.exit('정의 파일에 <p class="one"> 한 문장 정의가 없습니다.')
+    if links and 'class="refs-list"' not in links:
+        sys.exit('참고 링크 파일이 비어 있지 않은데 <ul class="refs-list"> 가 없습니다. 검증된 링크가 없으면 links.html 을 만들지 마세요.')
 
     accent_color = resolve_accent(a.topic, a.accent)
     category = resolve_category(a.topic)
@@ -265,6 +276,7 @@ def main():
     markers = (
         "<!--__DIAGRAM__-->",
         "<!--__DEFINITION__-->",
+        "<!--__LINKS__-->",
         "/*__STEPS__*/[]",
         "__TOPIC__",
         "__MODE__",
@@ -276,6 +288,11 @@ def main():
 
     html = html.replace("<!--__DIAGRAM__-->", svg)
     html = html.replace("<!--__DEFINITION__-->", define)
+    if links:
+        html = html.replace("<!--__LINKS__-->", links)
+    else:
+        # 검증된 링크가 없으면 참고 링크 섹션을 통째로 제거한다.
+        html = re.sub(r'\s*<section class="refs">.*?</section>', "", html, flags=re.DOTALL)
     html = html.replace("/*__STEPS__*/[]", steps)
     html = html.replace("__TOPIC__", a.topic)
     html = html.replace("__MODE__", a.mode)
