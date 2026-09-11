@@ -11,6 +11,7 @@ Draft a commit message for the current changes using the user's fixed personal t
 **Personal template:**
 - Format: `type: 한글 제목` — single line, no body, no bullets, no trailing period.
 - Type vocabulary, most-used first: `feat` (new feature), `fix` (bug fix), `refactor` (restructuring without behavior change), `perf` (performance improvement), `docs` (documentation/README), `design` (styling/UI-only changes), `test` (test code), `remove` (deleting files/code), `ci` (CI/CD config), `chore` (misc/config/deps). Pick whichever fits the diff; don't invent other types.
+- **Classify by what the diff actually does, never by file extension or file name.** No extension maps to a fixed type — `.md`, `.json`, `.yaml`, `.css` etc. can each be `fix`, `feat`, `refactor`, `docs`, `design`, or `chore` depending on the change. Read the diff's actual effect: content that drives behavior (skill/config/rules logic, application code) gets `fix`/`feat`/`refactor`/`perf` based on what changed; only text with no behavioral effect (prose, comments, README) gets `docs`; only visual-only CSS/markup gets `design`.
 - Title in Korean, descriptive noun-phrase style (not a full sentence, no trailing "~합니다"), e.g. `fix: 관리자 수강 정보 상세 화면 데이터 표시 오류 수정`, `feat: 사용자 정보 반환 시 수강 비밀번호 설정 여부 필드 추가`.
 - Keep the title short and high-level — name the target and what changed, then stop. Leave out implementation specifics ("드래그와 동일하게", "…을 통해"), comparisons, secondary qualifiers, and the why/how. Aim for roughly the length of the examples above.
 - Use plain everyday verbs: 추가 / 수정 / 변경 / 삭제 / 정리. Avoid showier synonyms like 전환·도입.
@@ -27,6 +28,12 @@ Draft a commit message for the current changes using the user's fixed personal t
 
 2. **Draft ONE message matching the personal template above**, based on the real diff — describe what actually changed, don't guess.
 
-3. **Present the drafted message and stop.**
+3. **Before presenting, check the draft against these three — in this order, and don't trim 1 or 2 to satisfy 3:**
+   1. Type matches what the diff actually does (never the file extension).
+   2. Title names the concrete target (which skill/file/feature/screen changed) — not just the verb.
+   3. Only once 1 and 2 hold, trim length to match the calibration examples.
+   If it fails any check, redraft before showing it.
+
+4. **Present the drafted message and stop.**
    - Drafting a message is not a request to commit. Do not run `git commit`, and do not stage files, even if the message looks final.
    - Only proceed to commit if the user explicitly follows up asking to commit (e.g. "이 메시지로 커밋해줘").
