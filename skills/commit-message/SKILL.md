@@ -14,6 +14,7 @@ Draft a commit message for the current changes using the user's fixed personal t
 - **Classify by what the diff actually does, never by file extension or file name.** No extension maps to a fixed type — `.md`, `.json`, `.yaml`, `.css` etc. can each be `fix`, `feat`, `refactor`, `docs`, `design`, or `chore` depending on the change. Read the diff's actual effect: content that drives behavior (skill/config/rules logic, application code) gets `fix`/`feat`/`refactor`/`perf` based on what changed; only text with no behavioral effect (prose, comments, README) gets `docs`; only visual-only CSS/markup gets `design`.
 - Title in Korean, descriptive noun-phrase style (not a full sentence, no trailing "~합니다"), e.g. `fix: 관리자 수강 정보 상세 화면 데이터 표시 오류 수정`, `feat: 사용자 정보 반환 시 수강 비밀번호 설정 여부 필드 추가`.
 - Keep the title short and high-level — name the target and what changed, then stop. Leave out implementation specifics ("드래그와 동일하게", "…을 통해"), comparisons, secondary qualifiers, and the why/how. Aim for roughly the length of the examples above.
+- **Never put a literal file name or path in the title, even if it's unique in the repo** (e.g. not `RULES.md 규칙 추가`, not `SKILL.md 수정`). Git already tracks which files changed. Name the target as a concept instead — a feature, screen, skill, or the guideline/rule itself (e.g. `eli5`, `commit-message 스킬`, `관리자 리스트페이지`) — or drop the target entirely when the change description alone is unambiguous.
 - Use plain everyday verbs: 추가 / 수정 / 변경 / 삭제 / 정리. Avoid showier synonyms like 전환·도입.
 - Drop the object particle (을/를) when the title reads naturally as a noun phrase: `… 이동 버튼 비동기 방식으로 변경`, not `… 이동 버튼을 … 방식으로 변경`.
 - Use the user's own domain vocabulary — e.g. the list screen of an admin CRUD entity is "리스트페이지", not "목록".
@@ -30,7 +31,7 @@ Draft a commit message for the current changes using the user's fixed personal t
 
 3. **Before presenting, check the draft against these three — in this order, and don't trim 1 or 2 to satisfy 3:**
    1. Type matches what the diff actually does (never the file extension).
-   2. Title names the concrete target (which skill/file/feature/screen changed) — not just the verb.
+   2. Title names the concrete target (which skill/feature/screen/rule changed, as a concept — never a literal file name or path) — not just the verb.
    3. Only once 1 and 2 hold, trim length to match the calibration examples.
    If it fails any check, redraft before showing it.
 
