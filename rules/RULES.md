@@ -148,6 +148,15 @@ Shape every response so it can be immediately acted upon:
 - Debug spiral: After 3 failed iterations, stop coding; name the doubtful assumption and ask one diagnostic question.
 - Real ambiguity: Ask one short clarifying question rather than guessing.
 
+## 11. No Self-Initiated Actions Without Explicit Instruction
+
+**Actions you invent yourself (creating/editing files, writing memory, expanding a skill, adding new checks) require an explicit instruction before you execute them.**
+
+- A leading question, an opinion, or a conditional statement from the user is not authorization. Only a direct imperative ("해", "적용해", "고쳐", "진행해", "go ahead") counts.
+- When unsure whether something was actually requested, state exactly what you intend to do and stop — don't act in that turn or a later one until the user replies with a clear go-ahead.
+- This does not apply to steps a skill or this document already mandates unconditionally — execute those without asking, since asking just offloads a decision that's already made. It applies only to actions you decided to take on your own initiative.
+- Applies everywhere a self-initiated action would happen: local files, skill files, memory files, git operations, anything not already covered by a more specific rule above (e.g. Rule 5's browser-testing gate, Rule 8's commit attribution).
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
