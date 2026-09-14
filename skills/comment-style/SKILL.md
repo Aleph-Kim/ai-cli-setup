@@ -16,6 +16,18 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
 2. **Placement: directly above the code it explains**, not trailing — except for rule 3c. One comment sits immediately before the block, statement, or method it describes.
 
 3. **Comment shapes, chosen by placement and context.** Both end in a noun phrase (명사형 종결: "~저장", "~조회", "~폴백", "~발송", "~목록") — never a verb-ending full sentence like "~한다/~된다", even in the block form. **No trailing period** — a noun phrase doesn't take one; this holds even when a comment packs two clauses separated by a mid-sentence period (e.g. "큐에 쌓인 알림을 일괄 전송, 만료된(410/404) 구독은 자동 삭제").
+   - **Passes the letter of this rule but still wrong** — no trailing period, doesn't end in a conjugated verb, and yet violates the convention:
+     - No symbolic notation standing in for a verb (`=`, `→`, etc.) — spell the relationship out in Korean prose instead.
+       ```php
+       // 틀림: 이미 locale 접두사가 붙었는데 매칭 실패 = 진짜 404
+       // 맞음: locale 접두사가 있는 경로의 404 처리 (접두사 누락으로 인한 실패와 구분)
+       ```
+     - The final word must be an actual nominalized noun (조회/저장/방지 류), not a bare literal value (a number, an id, a status code) tacked on as the last token — ending on "404" isn't a noun-phrase ending just because it isn't a verb.
+     - Prefer one compressed noun-phrase chain over a reasoned sentence built from connective endings (`-이므로`, `-면`, `-는데도`, i.e. "since X, if Y then Z") — even when the very last word is a genuine noun, a comment shaped like a small paragraph of reasoning still reads wrong; compress it to a label like the examples in this rule.
+       ```php
+       // 틀림: 컨트롤러 인자는 위치 기반 바인딩이므로, locale을 남겨두면 뒤따르는 파라미터가 밀리는 문제 방지
+       // 맞음: 컨트롤러 인자 위치 바인딩 특성으로 인한 뒤 파라미터(boardSlug 등) 밀림 방지
+       ```
    - **(a) Single-line `//` — method body and statement blocks.** Used for statements, logic branches, and blocks inside a method or function body.
      ```php
      // 가수 조회 및 저장 (이미지 업로드는 신규 생성 시에만)
