@@ -1,7 +1,7 @@
 ---
 name: commit-message
 description: >-
-  Draft a git commit message using the user's fixed personal template (Korean, single-line `type: 제목`, no body) — the same template for every repository, not repo-specific detection. Use when the user asks to write, draft, or suggest a commit message ("커밋 메시지 만들어줘/작성해줘/제안해줘"). Drafts only — never runs git commit unless the user explicitly says to commit.
+  Draft a git commit message using the user's fixed personal template (Korean, single-line `type: 제목`, no body) — the same template for every repository, not repo-specific detection. Use when the user asks to write, draft, or suggest a commit message ("커밋 메시지 만들어줘/작성해줘/제안해줘"), AND when that request is bundled with committing ("커밋 메시지 만들어서 커밋해줘", "작성해서 커밋", "메시지 만들어 커밋까지") — the bundled form still needs the template; draft first, then commit with that message. Drafts only otherwise — never runs git commit unless the user explicitly says to commit.
 ---
 
 # Commit Message
@@ -11,6 +11,7 @@ Draft a commit message for the current changes using the user's fixed personal t
 **Personal template:**
 - Format: `type: 한글 제목` — single line, no body, no bullets, no trailing period.
 - Type vocabulary, most-used first: `feat` (new feature), `fix` (bug fix), `refactor` (restructuring without behavior change), `perf` (performance improvement), `docs` (documentation/README), `design` (styling/UI-only changes), `test` (test code), `remove` (deleting files/code), `ci` (CI/CD config), `chore` (misc/config/deps). Pick whichever fits the diff; don't invent other types.
+- **Skill / prompt / rules repos (SKILL.md, RULES.md, CLAUDE.md):** `feat` = a new skill, or a new independent capability/section; `fix` = filling a rule gap or defect that was causing wrong agent behavior or user rejections (a rule bug is a bug); `chore` = routine tuning of existing guidance — adding a detail criterion, wording adjustments, config touch-ups — with no defect being corrected; `docs` = README/guide prose only. Adding text to a single file is not automatically `feat`.
 - **Classify by what the diff actually does, never by file extension or file name.** No extension maps to a fixed type — `.md`, `.json`, `.yaml`, `.css` etc. can each be `fix`, `feat`, `refactor`, `docs`, `design`, or `chore` depending on the change. Read the diff's actual effect: content that drives behavior (skill/config/rules logic, application code) gets `fix`/`feat`/`refactor`/`perf` based on what changed; only text with no behavioral effect (prose, comments, README) gets `docs`; only visual-only CSS/markup gets `design`.
 - Title in Korean, descriptive noun-phrase style (not a full sentence, no trailing "~합니다"), e.g. `fix: 관리자 수강 정보 상세 화면 데이터 표시 오류 수정`, `feat: 사용자 정보 반환 시 수강 비밀번호 설정 여부 필드 추가`.
 - Keep the title short and high-level — name the target and what changed, then stop. Leave out implementation specifics ("드래그와 동일하게", "…을 통해"), comparisons, secondary qualifiers, and the why/how. Aim for roughly the length of the examples above.
@@ -38,3 +39,4 @@ Draft a commit message for the current changes using the user's fixed personal t
 4. **Present the drafted message and stop.**
    - Drafting a message is not a request to commit. Do not run `git commit`, and do not stage files, even if the message looks final.
    - Only proceed to commit if the user explicitly follows up asking to commit (e.g. "이 메시지로 커밋해줘").
+   - Exception: if the original request already bundled the commit ("만들어서 커밋해줘"), go straight to committing with the drafted message — the template still applies (single line, no body, no bullets).
