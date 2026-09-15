@@ -29,7 +29,8 @@ DEV_DOMAIN_RULES = [
             "신경망", "neural", "llm", "gpt", "트랜스포머", "transformer", "임베딩",
             "embedding", "파인튜닝", "fine-tuning", "프롬프트", "prompt", "rag",
             "확산 모델", "diffusion", "강화학습", "reinforcement learning",
-            "생성 모델", "생성형", "벡터 데이터베이스", "벡터 db"
+            "생성 모델", "생성형", "벡터 데이터베이스", "벡터 db",
+            "ocr", "광학 문자", "컴퓨터 비전", "computer vision", "이미지 인식", "객체 인식"
         ]
     ),
     (
@@ -54,7 +55,7 @@ DEV_DOMAIN_RULES = [
         [
             "architecture", "아키텍처", "hexagonal", "헥사고날", "clean architecture",
             "클린", "ddd", "domain driven", "kafka", "카프카", "rabbitmq", "mq",
-            "queue", "큐", "event", "이벤트", "msa", "microservice", "마이크로서비스",
+            "queue", "메시지 큐", "큐잉", "event", "이벤트", "msa", "microservice", "마이크로서비스",
             "pattern", "패턴", "pub/sub", "pubsub", "saga", "cqrs"
         ]
     ),
@@ -71,7 +72,10 @@ DEV_DOMAIN_RULES = [
         [
             "network", "네트워크", "http", "https", "tcp", "udp", "ip", "dns",
             "websocket", "웹소켓", "socket", "소켓", "rest", "restful", "api",
-            "grpc", "graphql", "gateway", "게이트웨이", "packet", "패킷", "cdn", "proxy", "프록시"
+            "grpc", "graphql", "gateway", "게이트웨이", "packet", "패킷", "cdn", "proxy", "프록시",
+            "블루투스", "bluetooth", "와이파이", "wifi", "wi-fi", "무선", "wireless", "radio",
+            "주파수", "frequency", "스펙트럼", "안테나", "지그비", "zigbee", "nfc", "lora",
+            "lte", "5g", "셀룰러", "cellular", "호핑"
         ]
     ),
     (
@@ -109,19 +113,19 @@ DEV_DOMAIN_RULES = [
 GENERAL_DOMAIN_RULES = [
     (
         "자연과학", "#16a34a",  # Green: 자연 / 환경 / 생물 / 지구
-        ["비", "날씨", "광합성", "생태", "식물", "지구", "기후", "바다", "환경", "생물", "동물", "숲", "나무"]
+        ["강수", "빗방울", "비가 오", "날씨", "광합성", "생태", "식물", "지구", "기후", "바다", "환경", "생물", "동물", "삼림", "나무"]
     ),
     (
         "자연과학", "#0284c7",  # Sky Blue: 물리 / 화학 / 우주
-        ["우주", "원자", "양자", "물리", "화학", "상대성", "행성", "중력", "빛", "별", "은하", "과학", "블랙홀"]
+        ["우주", "원자", "양자", "물리", "화학", "상대성", "행성", "중력", "빛의", "빛이", "항성", "별의", "은하", "과학", "블랙홀"]
     ),
     (
         "경제/금융", "#b45309",  # Warm Amber: 경제 / 금융 / 비즈니스
-        ["인플레이션", "금리", "환율", "주식", "경제", "투자", "은행", "화폐", "돈", "부동산", "시장", "자본"]
+        ["인플레이션", "물가", "지수", "금리", "환율", "주식", "주가", "경제", "투자", "은행", "화폐", "돈의", "돈이", "통화", "부동산", "시장", "자본"]
     ),
     (
         "의학/생명", "#be123c",  # Crimson: 의학 / 인체 / 건강 / 생명공학
-        ["면역", "뇌", "심장", "세포", "의학", "바이러스", "백신", "호르몬", "건강", "의료", "소화", "혈액", "수면", "생명공학", "유전자", "단백질"]
+        ["면역", "두뇌", "뇌의", "뇌과학", "심장", "세포", "의학", "바이러스", "백신", "호르몬", "건강", "의료", "소화", "혈액", "수면", "생명공학", "유전자", "단백질"]
     ),
     (
         "인문/사회", "#8b5cf6",  # Purple: 인문 / 사회 / 예술 / 역사
@@ -130,6 +134,10 @@ GENERAL_DOMAIN_RULES = [
 ]
 
 ALL_DOMAIN_RULES = DEV_DOMAIN_RULES + GENERAL_DOMAIN_RULES
+
+# 부분 문자열 매칭에서 1글자 키워드는 와일드카드 (예: '비' → '컴퓨터 비전' 오분류)
+_short = [kw for _, _, kws in ALL_DOMAIN_RULES for kw in kws if len(kw) < 2]
+assert not _short, f"1글자 키워드 금지: {_short}"
 
 FALLBACK_PALETTE = [
     "#2563eb",  # Blue
@@ -145,11 +153,22 @@ FALLBACK_PALETTE = [
 
 def match_domain(topic: str):
     """주제 키워드로 (대분류, 색상) 규칙을 찾는다. 매칭 실패 시 None."""
+    matched = match_all_domains(topic)
+    return matched[0] if matched else None
+
+
+def match_all_domains(topic: str) -> list[tuple[str, str]]:
+    """주제에 걸리는 모든 (대분류, 색상) 규칙을 선언 순서대로 반환"""
     t = topic.lower()
-    for domain, color, keywords in ALL_DOMAIN_RULES:
-        if any(kw in t for kw in keywords):
-            return domain, color
-    return None
+    return [(domain, color) for domain, color, keywords in ALL_DOMAIN_RULES if any(kw in t for kw in keywords)]
+
+
+def domain_of_color(color: str) -> str:
+    """분류표 색상에 해당하는 대분류 (표에 없는 색이면 빈 문자열)"""
+    for domain, c, _ in ALL_DOMAIN_RULES:
+        if c == color:
+            return domain
+    return ""
 
 
 def resolve_accent(topic: str, custom_accent: str | None) -> str:
@@ -265,6 +284,12 @@ def main():
         sys.exit("STEPS 파일은 '[' 로 시작하는 JS 배열 리터럴이어야 합니다.")
     if "<svg" not in svg:
         sys.exit("다이어그램 파일에 <svg> 요소가 없습니다.")
+    # 셸이 width:100%;height:auto 로 크기를 잡으므로 루트 svg 의 고정 크기 속성 제거
+    svg_open, gt, svg_rest = svg.partition(">")
+    svg_open = re.sub(r'\s+(?:width|height)="[^"]*"', "", svg_open)
+    svg = svg_open + gt + svg_rest
+    if "viewBox" not in svg_open:
+        print("경고: 루트 <svg> 에 viewBox 가 없어 반응형 크기 조절이 되지 않습니다.")
     if 'class="one"' not in define:
         sys.exit('정의 파일에 <p class="one"> 한 문장 정의가 없습니다.')
     if links and 'class="refs-list"' not in links:
@@ -272,6 +297,21 @@ def main():
 
     accent_color = resolve_accent(a.topic, a.accent)
     category = resolve_category(a.topic)
+    notices = []
+
+    # 다의어 키워드 경합 (예: '인덱스' → 데이터베이스 vs 경제/금융) 노출
+    competing = [d for d, _ in match_all_domains(a.topic) if d != category]
+    if competing:
+        notices.append(f"다른 대분류에도 매칭됨: {', '.join(dict.fromkeys(competing))} — 오분류면 --accent/--category 수동 교정")
+
+    # --accent 수동 지정 시 대분류도 함께 따라가도록 동기화 (색과 카테고리 불일치 방지)
+    if a.accent:
+        accent_domain = domain_of_color(accent_color)
+        if accent_domain and accent_domain != category:
+            notices.append(f"악센트 색 기준 대분류 '{accent_domain}'로 변경 (주제 키워드 매칭: '{category or '없음'}')")
+            category = accent_domain
+        elif not accent_domain:
+            notices.append("지정한 악센트 색은 분류표에 없어 대분류는 주제 키워드 매칭 결과 유지")
 
     markers = (
         "<!--__DIAGRAM__-->",
@@ -301,8 +341,12 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html, encoding="utf-8")
     print(f"생성 완료: {out_path}  ({len(html):,} bytes, accent: {accent_color})")
+    for n in notices:
+        print(f"주의: {n}")
     if category:
         print(f"상위 대분류: {category}   (docs-upload 업로드 시 --category \"{category}\" 로 전달)")
+    else:
+        print("상위 대분류: 없음 — 주제 키워드가 분류표에 없음. docs-upload 업로드 시 --category 수동 지정 필요")
 
 
 if __name__ == "__main__":
