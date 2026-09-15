@@ -77,6 +77,19 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
 4. **Content bias: explain WHY, not WHAT.** Never restate what the code visibly does line by line. A comment earns its place only when it captures intent, a business rule, or a constraint the reader can't get from reading the code itself. If the code is self-evident, don't comment it.
 
 5. **Sparse by default.** Comment only at real decision points: business-logic branches, non-obvious external-system constraints, or short workarounds. Most functions and most lines carry zero comments — don't add one to every method just because you touched it.
+   - **Pre-write gate, run before choosing a shape:** for each candidate comment, state what the reader loses if it is deleted. If the answer is "nothing — the name and signature already say it", don't write it. The shape rules (Korean, noun-phrase, doc block) are self-checkable from the comment text alone, so they get satisfied while this one gets skipped; that is exactly how a file ends up with a doc block above nearly every method.
+   - **Concrete density test:** a file where the majority of declarations carry doc blocks is presumed wrong until each one names a constraint, decision, or non-obvious return shape.
+   - Correctly withheld:
+     ```php
+     // 틀림 — 이름이 이미 말하는 것을 반복
+     /**
+      * 사용자 ID로 사용자 조회
+      */
+     public function findUserById(int $id): ?User
+
+     // 맞음 — 주석 없음. 이름과 시그니처가 전부 말한다
+     public function findUserById(int $id): ?User
+     ```
 
 6. **No banners, no markers, no boilerplate.** No `====`/`----`/`#region` section dividers, no `TODO`/`FIXME` tags, no file- or class-level doc comments. For `@param`/`@return`, use only when non-obvious parameter or return shape clarification is genuinely needed per rule 3b. Just the comment types in rule 3.
 
