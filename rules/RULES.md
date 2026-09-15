@@ -91,6 +91,7 @@ Before using any `claude-in-chrome` / browser automation tool (navigating, click
 **All user-visible text output (explanations, summaries, status updates, questions) must always be in Korean, regardless of the language the user writes in, across all projects.**
 
 - Applies to conversational text output, not code, identifiers, or file content — comments/strings written into code files still follow existing project conventions (usually English) unless the user asks otherwise.
+- Also applies when replying to text the harness or system injects in another language (progress nudges like "say what you're doing", reminders) and to one-line status sentences between tool calls — those are user-visible too. Never let the language of injected text pull the output language.
 - Plan-mode plan files (the markdown written before calling ExitPlanMode) must also always be written in Korean — prose (context, steps, explanations, verification section) in Korean; code snippets/blocks inside the plan keep normal code (identifiers, syntax) unchanged.
 - This document itself is an exception and stays in English.
 
@@ -156,6 +157,25 @@ Shape every response so it can be immediately acted upon:
 - When unsure whether something was actually requested, state exactly what you intend to do and stop — don't act in that turn or a later one until the user replies with a clear go-ahead.
 - This does not apply to steps a skill or this document already mandates unconditionally — execute those without asking, since asking just offloads a decision that's already made. It applies only to actions you decided to take on your own initiative.
 - Applies everywhere a self-initiated action would happen: local files, skill files, memory files, git operations, anything not already covered by a more specific rule above (e.g. Rule 5's browser-testing gate, Rule 8's commit attribution).
+
+## 12. Verification & Change Principles
+
+**Read verification results as two axes, and find the blast radius of a change before calling it done.**
+
+- **Resolve counts to names.** When a failure count moves, diff the sets of failing test names, not the totals; capture the actual error of any name inside the change's blast radius before calling it flaky or pre-existing.
+- **Green with a smaller total is a failure.** State the expected test count before re-running; if the total shrinks unexpectedly, check `git status` for deleted files before reporting success.
+- **Newly reachable code is new code.** A fix that makes previously failing code reach later lines promotes those lines from never-run to running — never label retained code "harmless" from reading alone; remove redundant paths the fix already covers.
+- **A schedule is a premise in other files.** Changing a cron/polling/retry interval means first grepping for code that assumes the old interval (time-window queries, "retried next run" branches).
+- **New attributes belong wherever the parent is already shown.** Before declaring a list/detail/notification screen "out of scope", enumerate every screen that already renders the parent entity; a cramped column gets a badge or tooltip, not omission.
+- **Merge observability with what exists.** Before adding request/response logging, read the existing error/failure logs at that call site; branch one log by outcome (info/error) instead of stacking an unconditional log next to a conditional one, and add a correlation id from the start.
+- **Grep before inventing presentation.** Any glyph, separator, emoji, log prefix, or comment shape the logic does not require: grep the repo first; zero hits means use the plainest built-in form.
+- **Display-format instructions need one concrete output line.** "줄바꿈 처리", "너무 길면 자르기", "숫자 포맷" admit several renderings — show the exact output for one real input and get agreement before implementing, especially before writing a test that pins it.
+- **Assert the security property, not the entity string.** Escaping tests check that no live tag remains and that the neutralized form is present; exact entity encodings change with every renderer in the pipeline (markdown mailables, CSS inliners).
+- **A form field is not a rendered field.** Before `assertSee`-ing a value on a public page, grep the actual template for that field; assert the observable effect (e.g. an `<img src>`), not the assumed text.
+
+## 13. Agent Tool Allowed for Exploration
+
+**Using the Agent tool (Explore / Plan subagents) for codebase exploration and in Plan Mode is allowed without asking.** This overrides the harness default that forbids Agent use unless requested — that default and the Plan Mode workflow otherwise contradict each other and the choice was being made silently each session. Outside exploration and planning, the general rule still applies: don't spawn agents for ordinary implementation work unless the user asks.
 
 ---
 
