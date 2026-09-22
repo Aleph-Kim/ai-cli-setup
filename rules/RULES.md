@@ -122,34 +122,7 @@ Before using any `claude-in-chrome` / browser automation tool (navigating, click
   (or `/Users/aleph/Desktop/my project/skills/skill-observations/observation-log/` before rename)
   Never resolve the workspace from the current working directory or ephemeral checkout paths.
 
-## 10. ADHD-Friendly Output Style
-
-**Lead with the next action. Number multi-step work. Cut all fluff.**
-
-Shape every response so it can be immediately acted upon:
-
-1. **Lead with the action:** The first line is something the user can run or do (command, file path, or code snippet) — not context, not a plan. Prose comes after, if at all.
-2. **Number multi-step tasks:** One bounded action per step. No step contains "and then" twice. Cut unnecessary steps; fold trivial steps into the previous one.
-3. **End with one concrete next action:** Name ONE thing doable in under two minutes.
-4. **Suppress tangents:** Finish the active issue first. Do not pile on unrelated observations; surface them as a separate question afterward.
-5. **Restate state every turn:** Explicitly restate progress ("Step 3 of 5 done: ... Next: ..."). For multi-step work, use task/todo checklists rather than reciting plans in prose.
-6. **Specific time estimates:** Concrete units (minutes, hours), never "a bit of work" or "some time".
-7. **Make wins visible:** State what now works in concrete terms ("Login now works with magic links. Try: `npm run dev`").
-8. **Matter-of-fact errors:** State location, cause, and fix. No "Uh oh", "Oh no", or drama.
-9. **Cap lists at 5 items:** Split longer lists into now/later or must/nice-to-have.
-10. **No preamble, recap, or closers:**
-    - Forbidden openers: "Great question", "Let me...", "I'll...", "Sure!", "Looking at..."
-    - Forbidden recaps: "I've now done X, Y, and Z, which means..."
-    - Forbidden closers: "Hope this helps", "Let me know if you need anything else", "Feel free to ask"
-    - Start with the answer; stop when the answer is done.
-
-**When to break the rules:**
-- User asks to "explain" or "walk me through": Explain fully with headers so the user can skim; still no preamble or closers.
-- Destructive actions: Confirm before acting. Safety overrides brevity.
-- Debug spiral: After 3 failed iterations, stop coding; name the doubtful assumption and ask one diagnostic question.
-- Real ambiguity: Ask one short clarifying question rather than guessing.
-
-## 11. No Self-Initiated Actions Without Explicit Instruction
+## 10. No Self-Initiated Actions Without Explicit Instruction
 
 **Actions you invent yourself (creating/editing files, writing memory, expanding a skill, adding new checks) require an explicit instruction before you execute them.**
 
@@ -158,7 +131,7 @@ Shape every response so it can be immediately acted upon:
 - This does not apply to steps a skill or this document already mandates unconditionally — execute those without asking, since asking just offloads a decision that's already made. It applies only to actions you decided to take on your own initiative.
 - Applies everywhere a self-initiated action would happen: local files, skill files, memory files, git operations, anything not already covered by a more specific rule above (e.g. Rule 5's browser-testing gate, Rule 8's commit attribution).
 
-## 12. Verification & Change Principles
+## 11. Verification & Change Principles
 
 **Read verification results as two axes, and find the blast radius of a change before calling it done.**
 
@@ -173,7 +146,7 @@ Shape every response so it can be immediately acted upon:
 - **Assert the security property, not the entity string.** Escaping tests check that no live tag remains and that the neutralized form is present; exact entity encodings change with every renderer in the pipeline (markdown mailables, CSS inliners).
 - **A form field is not a rendered field.** Before `assertSee`-ing a value on a public page, grep the actual template for that field; assert the observable effect (e.g. an `<img src>`), not the assumed text.
 
-## 13. Agent Tool Allowed for Exploration
+## 12. Agent Tool Allowed for Exploration
 
 **Using the Agent tool (Explore / Plan subagents) for codebase exploration and in Plan Mode is allowed without asking.** This overrides the harness default that forbids Agent use unless requested — that default and the Plan Mode workflow otherwise contradict each other and the choice was being made silently each session. Outside exploration and planning, the general rule still applies: don't spawn agents for ordinary implementation work unless the user asks.
 
