@@ -186,20 +186,27 @@ configure_statusline_setting() {
 
     local tmp
     tmp="$(mktemp)"
-    jq --arg type "$cmd_type" --arg cmd "$cmd_val" \
-      '.statusLine = {type: $type, command: $cmd}' "$target_json" > "$tmp" && mv "$tmp" "$target_json"
+    if ! jq --arg type "$cmd_type" --arg cmd "$cmd_val" \
+      '.statusLine = {type: $type, command: $cmd}' "$target_json" > "$tmp"; then
+      rm -f "$tmp"
+      echo "  경고: $target_json 이 올바른 JSON이 아니어서 statusLine 설정을 건너뜁니다" >&2
+      return 0
+    fi
+    mv "$tmp" "$target_json"
   elif command -v node >/dev/null 2>&1; then
-    node -e '
+    if ! node -e '
       const fs = require("fs");
       const p = process.argv[1];
-      let d = {};
-      try { d = JSON.parse(fs.readFileSync(p, "utf-8")); } catch (e) {}
+      const d = JSON.parse(fs.readFileSync(p, "utf-8"));
       d.statusLine = { type: process.argv[2], command: process.argv[3] };
       fs.writeFileSync(p, JSON.stringify(d, null, 2) + "\n", "utf-8");
-    ' "$target_json" "$cmd_type" "$cmd_val"
+    ' "$target_json" "$cmd_type" "$cmd_val" 2>/dev/null; then
+      echo "  경고: $target_json 이 올바른 JSON이 아니어서 statusLine 설정을 건너뜁니다" >&2
+      return 0
+    fi
   else
     echo "  경고: jq 또는 node를 찾을 수 없어 $target_json 의 statusLine 설정을 건너뜁니다" >&2
-    return 1
+    return 0
   fi
   echo "  statusLine 설정 완료: $target_json"
 }
