@@ -24,6 +24,7 @@ AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 �
 - `docs-upload` — eli5 결과물 또는 HTML 시각화 문서를 docs 아카이브 서버에 업로드/등록
 - `task-observer` — 세션 중 작업을 관찰해 스킬 개선/신규 스킬 후보를 기록하는 메타 스킬
 - `project-prompt` — 프로젝트 주제 기반 기본 세팅 프롬프트 생성
+- `project-feedback` — 완료된 프로젝트 코드베이스를 정석 기준으로 진단해 부족한 점만 등급별로 지적하는 비판 리포트 작성
 - `taste-skill` — 랜딩/마케팅 페이지의 디자인 방향 결정 및 AI 특유의 템플릿 티(AI Slop) 차단
 - `web-design-guidelines` — 인터랙션·폼·접근성·성능 등 프로덕션 수준 프론트엔드 품질 체크리스트 강제
 - `hyperui` — HyperUI(hyperui.dev) 스타일의 순수 HTML5 + Tailwind CSS 전용 컴포넌트 마크업 가이드 (React/JSX 배제, 시맨틱 HTML 우선)
