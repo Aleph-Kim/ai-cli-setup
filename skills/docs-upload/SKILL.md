@@ -37,7 +37,7 @@ DOCS_PASSWORD=서버_관리자_비밀번호_또는_API키
 
 ### 1-3. 카테고리 매칭 및 업로드 실행
 
-카테고리는 개별 문서 제목이 아닌 **상위 대분류(Domain)** 체계로 관리되며, `eli5` 스킬의 분류표(`skills/eli5/scripts/build.py`)와 이름을 맞춥니다. `upload.py`의 `DOMAIN_TAXONOMY`가 그 사본이며 수동 동기화합니다:
+카테고리는 개별 문서 제목이 아닌 **상위 대분류(Domain)** 체계로 관리되며, `eli5` 스킬의 분류표(`skills/eli5/scripts/build.py`)와 이름을 맞춥니다. `upload.py`가 이 분류표를 직접 불러옵니다 (`eli5` 스킬이 같은 skills 디렉터리에 있어야 함):
 - **웹/프론트엔드**: CSS, HTML, DOM, 브라우저 렌더링, JavaScript/TypeScript, React 등
 - **네트워크/통신**: 웹소켓, HTTP, TCP/IP, Web Push, REST/gRPC, DNS, CDN 등
 - **보안**: 인증/인가, OAuth, JWT, 암호화, 세션/쿠키, CORS/CSRF/XSS 등
@@ -57,7 +57,7 @@ DOCS_PASSWORD=서버_관리자_비밀번호_또는_API키
 
 **카테고리 처리 순서**:
 1. `GET /admin/categories`: 서버에 등록된 기존 카테고리 목록을 조회합니다.
-2. 문서 주제와 내용을 분석하여 적합한 **상위 대분류 카테고리**를 매칭합니다. (무관한 `test` 등의 임시 카테고리는 자동 배제)
+2. 문서 주제를 분석하여 적합한 **상위 대분류 카테고리**를 매칭합니다. (무관한 `test` 등의 임시 카테고리는 자동 배제)
 3. 기존 목록에 적합한 카테고리가 없다면 상위 대분류 카테고리를 `POST /admin/categories`로 **자동 생성**합니다.
 4. 사용자가 `--category "카테고리명"`으로 직접 전달한 경우 해당 카테고리를 최우선 사용(또는 생성)합니다.
 5. `POST /admin/visuals`: 결정된 카테고리와 함께 문서를 최종 등록합니다.

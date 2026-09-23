@@ -3,6 +3,7 @@
 
 import argparse
 import html
+import importlib.util
 import json
 import mimetypes
 import os
@@ -129,90 +130,14 @@ def create_category(base_url: str, api_key: str, name: str) -> dict:
     return category
 
 
-# 도메인별 표준 상위 카테고리 매핑 규칙
-#
-# 대분류 이름과 키워드는 eli5 스킬의 분류표와 일치시킨다 (수동 동기화).
-#   원본: skills/eli5/scripts/build.py 의 DEV_DOMAIN_RULES / GENERAL_DOMAIN_RULES
-# eli5 는 색상 구분을 위해 "컴퓨터 사이언스" 등을 여러 규칙으로 쪼개지만,
-# 카테고리 관점에서는 하나이므로 여기서는 키워드를 대분류별로 합쳐 둔다.
-# 단, 이 스킬은 주제 + HTML 본문 앞부분까지 매칭하므로, 본문 상용어와 충돌하는
-# 지나치게 일반적인 단일 단어(test, error, log 등)는 제외한다.
-DOMAIN_TAXONOMY = {
-    "보안": [
-        "oauth", "jwt", "ssl", "tls", "토큰", "보안", "인증", "인가", "암호화",
-        "세션", "쿠키", "rbac", "cors", "csrf", "xss", "crypto", "비밀번호"
-    ],
-    "인공지능/머신러닝": [
-        "인공지능", "머신러닝", "machine learning", "딥러닝", "deep learning",
-        "신경망", "neural", "llm", "gpt", "트랜스포머", "transformer", "임베딩",
-        "embedding", "파인튜닝", "프롬프트", "prompt", "rag", "확산 모델", "diffusion",
-        "강화학습", "생성형", "생성 모델", "벡터 데이터베이스"
-    ],
-    "데이터베이스": [
-        "database", "db", "sql", "nosql", "mysql", "postgresql", "sqlite",
-        "redis", "mongodb", "인덱스", "트랜잭션", "orm", "erd", "정규화", "샤딩", "캐시"
-    ],
-    "인프라/DevOps": [
-        "docker", "도커", "container", "컨테이너", "kubernetes", "k8s", "ci/cd",
-        "jenkins", "github actions", "linux", "리눅스", "배포", "인프라", "devops",
-        "클라우드", "aws", "gcp", "azure", "terraform", "serverless", "nginx"
-    ],
-    "소프트웨어 아키텍처": [
-        "architecture", "아키텍처", "헥사고날", "hexagonal", "클린 아키텍처", "ddd",
-        "도메인 주도", "디자인 패턴", "design pattern", "mvc", "msa", "마이크로서비스",
-        "api 설계", "모듈", "kafka", "카프카", "메시지 큐", "pub/sub", "saga", "cqrs", "이벤트 기반"
-    ],
-    "웹/프론트엔드": [
-        "css", "html", "dom", "javascript", "typescript", "react", "vue", "svelte",
-        "next.js", "frontend", "프론트엔드", "브라우저", "렌더링", "ui", "ux",
-        "웹 표준", "스타일", "상태관리", "redux", "tailwind", "webpack", "vite"
-    ],
-    "네트워크/통신": [
-        "websocket", "웹소켓", "http", "https", "tcp", "udp", "ip", "dns", "socket",
-        "소켓", "네트워크", "network", "push", "웹푸시", "rest", "restful", "grpc",
-        "graphql", "gateway", "게이트웨이", "패킷", "cdn", "proxy", "프록시"
-    ],
-    "컴퓨터 사이언스": [
-        "자료구조", "data structure", "알고리즘", "algorithm", "그리디", "greedy",
-        "동적 계획법", "다이나믹 프로그래밍", "dynamic programming", "백트래킹",
-        "분할 정복", "이진 탐색", "binary search", "bfs", "dfs", "다익스트라",
-        "최단 경로", "최소 신장 트리", "시간 복잡도", "빅오", "재귀", "recursion",
-        "메모이제이션", "정렬 알고리즘", "해시 테이블",
-        "os", "운영체제", "프로세스", "스레드", "thread", "메모리", "동시성",
-        "concurrency", "코루틴", "커널", "kernel", "컴파일러", "compiler", "포인터",
-        "임베디드", "embedded", "펌웨어", "아두이노", "arduino",
-        "테스트 코드", "단위 테스트", "tdd", "디버깅", "트러블슈팅", "스택 트레이스"
-    ],
-    "자연과학": [
-        "광합성", "생태", "지구", "기후", "날씨", "환경", "생물", "동물", "식물",
-        "우주", "원자", "양자", "물리", "화학", "상대성", "행성", "중력", "은하", "블랙홀"
-    ],
-    "의학/생명": [
-        "면역", "심장", "세포", "의학", "바이러스", "백신", "호르몬", "건강",
-        "의료", "소화", "혈액", "수면", "생명공학", "유전자", "단백질", "뇌과학"
-    ],
-    "경제/금융": [
-        "인플레이션", "금리", "환율", "주식", "경제", "투자", "은행", "화폐",
-        "부동산", "자본", "금융"
-    ],
-    "인문/사회": [
-        "역사", "철학", "음악", "미술", "문학", "사회", "법률", "헌법", "정치", "문화", "예술"
-    ]
-}
+# eli5 분류표를 단일 출처로 사용 (대분류명·키워드 사본 불일치 방지)
+_eli5_build_path = pathlib.Path(__file__).resolve().parents[2] / "eli5" / "scripts" / "build.py"
+_eli5_build_spec = importlib.util.spec_from_file_location("eli5_build", _eli5_build_path)
+eli5_build = importlib.util.module_from_spec(_eli5_build_spec)
+_eli5_build_spec.loader.exec_module(eli5_build)
 
 
-def infer_domain_category(text: str) -> str:
-    """텍스트(제목 및 내용)의 키워드를 분석하여 상위 도메인 카테고리를 추론."""
-    lower_text = text.lower()
-    for domain, keywords in DOMAIN_TAXONOMY.items():
-        for kw in keywords:
-            # 단어 단위 또는 부분 문자열 매칭
-            if kw in lower_text:
-                return domain
-    return ""
-
-
-def resolve_category(base_url: str, api_key: str, user_cat: str, html_text: str, topic: str) -> dict:
+def resolve_category(base_url: str, api_key: str, user_cat: str, topic: str) -> dict:
     """기존 카테고리 목록 중 적합한 상위 카테고리 탐색 -> 일치하는 것이 없으면 상위 도메인 카테고리 자동 생성."""
     categories = fetch_categories(base_url, api_key)
 
@@ -241,8 +166,7 @@ def resolve_category(base_url: str, api_key: str, user_cat: str, html_text: str,
         and cat.get("slug", "").strip().lower() not in excluded_names
     ]
 
-    combined_info = f"{topic} {html_text[:1000]}"
-    inferred_domain = infer_domain_category(combined_info)
+    inferred_domain = eli5_build.resolve_category(topic)
 
     # 2-1. 도메인 대분류가 추론된 경우: 해당 상위 카테고리 우선 매칭 또는 신규 생성
     if inferred_domain:
@@ -354,7 +278,7 @@ def main():
     # 3. 카테고리 조회 및 어울리는 카테고리 매칭/생성
     topic = args.title or extract_topic_from_html(file_content) or target_file.stem
     desc = args.description or extract_description_from_html(file_content) or None
-    category = resolve_category(base_url, api_key, args.category, file_content, topic)
+    category = resolve_category(base_url, api_key, args.category, topic)
 
     # 4. 문서 업로드 요청
     boundary = f"----WebKitFormBoundary{uuid.uuid4().hex}"
