@@ -194,6 +194,19 @@ def resolve_category(topic: str) -> str:
     return matched[0] if matched else ""
 
 
+def cap_tall_svg(svg_open: str) -> str:
+    """세로로 긴 다이어그램(viewBox 높이/폭 0.35 이상)의 렌더링 높이를 420px 안팎으로 제한하는 max-width 주입
+    (폭 100%로 늘어나 하단 단계 설명이 화면 밖으로 밀리는 문제 방지)"""
+    m = re.search(r'viewBox="([^"]*)"', svg_open)
+    if not m:
+        return svg_open
+    _, _, w, h = (float(v) for v in re.split(r"[\s,]+", m.group(1).strip()))
+    ratio = h / w
+    if ratio < 0.35:
+        return svg_open
+    return svg_open + f' style="max-width:{round(420 / ratio)}px;margin:0 auto"'
+
+
 def category_colors() -> dict:
     """상위 대분류 -> 대표 악센트 색상 (해당 대분류의 첫 규칙 색상).
 
@@ -287,6 +300,7 @@ def main():
     # 셸이 width:100%;height:auto 로 크기를 잡으므로 루트 svg 의 고정 크기 속성 제거
     svg_open, gt, svg_rest = svg.partition(">")
     svg_open = re.sub(r'\s+(?:width|height)="[^"]*"', "", svg_open)
+    svg_open = cap_tall_svg(svg_open)
     svg = svg_open + gt + svg_rest
     if "viewBox" not in svg_open:
         print("경고: 루트 <svg> 에 viewBox 가 없어 반응형 크기 조절이 되지 않습니다.")

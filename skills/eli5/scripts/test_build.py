@@ -18,5 +18,16 @@ class ResolveCategoryTest(unittest.TestCase):
                 self.assertEqual(build.resolve_category(topic), expected)
 
 
+class CapTallSvgTest(unittest.TestCase):
+    def test_tall_diagram_gets_max_width(self):
+        self.assertEqual(
+            build.cap_tall_svg('<svg viewBox="0 0 800 600"'),
+            '<svg viewBox="0 0 800 600" style="max-width:560px;margin:0 auto"',
+        )
+
+    def test_flat_diagram_untouched(self):
+        self.assertEqual(build.cap_tall_svg('<svg viewBox="0 0 940 250"'), '<svg viewBox="0 0 940 250"')
+
+
 if __name__ == "__main__":
     unittest.main()
