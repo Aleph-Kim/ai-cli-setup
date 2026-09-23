@@ -8,7 +8,7 @@
 AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 관리합니다.
 - 원본: `rules/RULES.md`
 - 배포: `~/.claude/CLAUDE.md` 및 `~/.gemini/GEMINI.md`로 심볼릭 링크 연결
-- Think Before Coding, Simplicity First, Surgical Changes, 한국어 응답 원칙, ADHD 친화적 출력 스타일 등 포함
+- Think Before Coding, Simplicity First, Surgical Changes, 한국어 응답 원칙 등 포함
 
 ### 2. Statusline (`statusline/`)
 터미널 하단에 모델명, Quota(5시간/주간 사용량 및 리셋 시각) 등을 표시하는 커스텀 상태표시줄 스크립트입니다.
@@ -44,8 +44,8 @@ cd ai-cli-setup
 ### 안전 장치 (백업 및 확인)
 `./install.sh` 실행 시 이미 대상 경로에 일반 파일이나 다른 설정이 존재하면:
 1. 기존 설정 파일 경로(`file exists: ...`)를 출력합니다.
-2. `기존 파일을 백업하고 덮어쓰시겠습니까? [y/N]` 확인을 거칩니다.
-3. `y` 입력 시 기존 파일은 해당 디렉토리의 `backup/` 폴더(`{dir}/backup/{file}.bak_YYYYMMDDHHMMSS`)로 백업된 뒤 심볼릭 링크로 교체됩니다. (`n` 입력 시 기존 설정 유지)
+2. `기존 파일을 백업하고 덮어쓰시겠습니까? [y/n]` 확인을 거칩니다.
+3. `y` 입력 시 기존 파일은 CLI 홈의 `backup/` 폴더(`~/.claude/backup/` 또는 `~/.gemini/backup/`에 `{file}.bak_YYYYMMDDHHMMSS`)로 백업된 뒤 심볼릭 링크로 교체됩니다. (`n` 입력 시 기존 설정 유지)
 4. 이미 이 저장소의 원본을 가리키는 링크는 `already linked`로 통과합니다.
 
 ### 옵션 플래그
