@@ -144,6 +144,7 @@ Before using any `claude-in-chrome` / browser automation tool (navigating, click
 - **Grep before inventing presentation.** Any glyph, separator, emoji, log prefix, or comment shape the logic does not require: grep the repo first; zero hits means use the plainest built-in form.
 - **Display-format instructions need one concrete output line.** "줄바꿈 처리", "너무 길면 자르기", "숫자 포맷" admit several renderings — show the exact output for one real input and get agreement before implementing, especially before writing a test that pins it.
 - **Assert the security property, not the entity string.** Escaping tests check that no live tag remains and that the neutralized form is present; exact entity encodings change with every renderer in the pipeline (markdown mailables, CSS inliners).
+- **Block external side effects before running, not after.** Before any verification command, grep the code path for outbound calls (SMS, mail, payment, external/government APIs) and fake each one; "it's the local environment" is not evidence — only the calling code decides whether a real request leaves. If blocking can't be confirmed, ask instead of running.
 - **A form field is not a rendered field.** Before `assertSee`-ing a value on a public page, grep the actual template for that field; assert the observable effect (e.g. an `<img src>`), not the assumed text.
 
 ## 12. Agent Tool Allowed for Exploration
