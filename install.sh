@@ -73,7 +73,7 @@ needs_backup() {
   local src="$1"
   local dest="$2"
 
-  if [ -L "$dest" ] && [ "$(readlink "$dest" || true)" = "$src" ]; then
+  if [ -L "$dest" ] && [ "$dest" -ef "$src" ]; then
     return 1
   fi
 
@@ -108,7 +108,7 @@ safe_link() {
 
   mkdir -p "$(dirname "$dest")"
 
-  if [ -L "$dest" ] && [ "$(readlink "$dest" || true)" = "$src" ]; then
+  if [ -L "$dest" ] && [ "$dest" -ef "$src" ]; then
     echo "  이미 연결됨: $dest"
     return 0
   fi
@@ -235,6 +235,15 @@ if [ "$INSTALL_SKILLS" = true ]; then
     "$HOME/.claude/skills"
     "$HOME/.gemini/config/skills"
   )
+
+  # 레포에서 삭제된 스킬의 링크만 정리 (레포 밖을 가리키는 링크는 유지)
+  for target_dir in "${TARGET_SKILL_DIRS[@]}"; do
+    for link in "$target_dir"/*; do
+      [ -L "$link" ] && [ ! -e "$link" ] && [ "$(dirname "$(readlink "$link")")" -ef "$SCRIPT_DIR/skills" ] || continue
+      rm "$link"
+      echo "  삭제된 스킬 링크 제거: $link"
+    done
+  done
 
   skill_pairs=()
   for target_dir in "${TARGET_SKILL_DIRS[@]}"; do
