@@ -32,4 +32,5 @@ Generate a self-check multiple-choice quiz about the user's current work so they
 ## Notes
 
 - All quiz text — questions, options, grading table, explanations — must be in Korean.
+- Quiz text uses only characters typable on a standard keyboard (Hangul, letters, digits, ASCII punctuation): no middle dot (`·`), arrows (`→`, `›`), em dash (`—`), ellipsis character (`…`) or emoji. Mark `정답 여부` with the words `정답` / `오답`, never ⭕, ❌, ✅ or ✔.
 - This skill only quizzes and grades; it never edits code, stages, or commits as part of running it.

@@ -64,6 +64,8 @@ Re-read the bucket list and confirm:
 - the estimate is a range with its basis shown, and every unattended item has its own estimate;
 - no tool call was made after the AskUserQuestion result (other than a follow-up question).
 
+Write the verdict and lists using only characters typable on a standard keyboard (Hangul, letters, digits, ASCII punctuation): no middle dot (`·`), arrows (`→`, `›`), em dash (`—`), ellipsis character (`…`) or emoji; use commas, colons or separate lines.
+
 If any check fails, fix the reply text; if the failure needs new information, the verdict is "아직 안 됩니다" with what is missing.
 
 ## Common failure patterns

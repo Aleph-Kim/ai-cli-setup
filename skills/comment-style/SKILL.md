@@ -18,6 +18,7 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
 3. **Comment shapes, chosen by placement and context.** Both end in a noun phrase (명사형 종결: "~저장", "~조회", "~폴백", "~발송", "~목록") — never a verb-ending full sentence like "~한다/~된다", even in the block form. **No trailing period** — a noun phrase doesn't take one; this holds even when a comment packs two clauses separated by a mid-sentence period (e.g. "큐에 쌓인 알림을 일괄 전송, 만료된(410/404) 구독은 자동 삭제").
    - **Passes the letter of this rule but still wrong** — no trailing period, doesn't end in a conjugated verb, and yet violates the convention:
      - No symbolic notation standing in for a verb (`=`, `→`, etc.) — spell the relationship out in Korean prose instead.
+     - Comment text uses only characters typable on a standard keyboard (Hangul, letters, digits, ASCII punctuation): no middle dot (`·`), arrows (`→`, `›`), em dash (`—`), ellipsis character (`…`) or emoji. Use a comma or split the phrase.
        ```php
        // 틀림: 이미 locale 접두사가 붙었는데 매칭 실패 = 진짜 404
        // 맞음: locale 접두사가 있는 경로의 404 처리 (접두사 누락으로 인한 실패와 구분)
@@ -81,13 +82,13 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
    - **Concrete density test:** a file where the majority of declarations carry doc blocks is presumed wrong until each one names a constraint, decision, or non-obvious return shape.
    - Correctly withheld:
      ```php
-     // 틀림 — 이름이 이미 말하는 것을 반복
+     // 틀림: 이름이 이미 말하는 것을 반복
      /**
       * 사용자 ID로 사용자 조회
       */
      public function findUserById(int $id): ?User
 
-     // 맞음 — 주석 없음. 이름과 시그니처가 전부 말한다
+     // 맞음: 주석 없음. 이름과 시그니처가 전부 말한다
      public function findUserById(int $id): ?User
      ```
 

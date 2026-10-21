@@ -17,6 +17,7 @@ Draft a commit message for the current changes using the user's fixed personal t
 - Keep the title short and high-level — name the target and what changed, then stop. Leave out implementation specifics ("드래그와 동일하게", "…을 통해"), comparisons, secondary qualifiers, and the why/how. Aim for roughly the length of the examples above.
 - **Never put a literal file name or path in the title, even if it's unique in the repo** (e.g. not `RULES.md 규칙 추가`, not `SKILL.md 수정`). Git already tracks which files changed. Name the target as a concept instead — a feature, screen, skill, or the guideline/rule itself (e.g. `eli5`, `commit-message 스킬`, `관리자 리스트페이지`) — or drop the target entirely when the change description alone is unambiguous.
 - Use plain everyday verbs: 추가 / 수정 / 변경 / 삭제 / 정리. Avoid showier synonyms like 전환·도입.
+- The title uses only characters typable on a standard keyboard (Hangul, letters, digits, ASCII punctuation): no middle dot (`·`), arrows (`→`, `›`), em dash (`—`), ellipsis character (`…`) or emoji (no gitmoji either).
 - Drop the object particle (을/를) when the title reads naturally as a noun phrase: `… 이동 버튼 비동기 방식으로 변경`, not `… 이동 버튼을 … 방식으로 변경`.
 - Use the user's own domain vocabulary — e.g. the list screen of an admin CRUD entity is "리스트페이지", not "목록".
 - Calibration (same diff, both valid `type`): good — `refactor: 관리자 리스트페이지 순서 이동 버튼 비동기 방식으로 변경`; too verbose — `refactor: 관리자 목록 순서 이동 버튼을 드래그와 동일한 비동기 저장 방식으로 전환`.

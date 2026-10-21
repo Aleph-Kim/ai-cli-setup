@@ -19,6 +19,8 @@ Run this instead of silently swapping in a corrected answer.
 3. **Propose one recurrence-prevention step, sized to the problem.** A specific, checkable change (a rule, a checklist line, a skill step) — not a vague "I'll be more careful," and not a blanket policy that costs more than the mistake does.
 4. **Present the fix for review before applying it.** Don't edit a file, add a rule, or otherwise act on your own proposal in the same turn — that's a self-initiated action (see the "No Self-Initiated Actions" rule in RULES.md / CLAUDE.md). Wait for the user's go-ahead.
 
+Write the explanation using only characters typable on a standard keyboard (Hangul, letters, digits, ASCII punctuation): no middle dot (`·`), arrows (`→`, `›`), em dash (`—`), ellipsis character (`…`) or emoji; use commas, colons or separate sentences.
+
 Skipping straight to a corrected output without this sequence is itself a repeat offense, not a neutral shortcut.
 
 ## Common failure patterns
