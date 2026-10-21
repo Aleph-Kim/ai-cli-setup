@@ -82,17 +82,21 @@ body{
 .steps button.on{border-left-color:var(--accent);color:var(--ink);font-weight:600;background:var(--card)}
 .steps .idx{font:11px var(--mono);margin-right:6px;color:var(--muted)}
 
-.detail h2{font-size:17px;margin:0 0 6px;letter-spacing:-.01em}
+.detail h2{font-size:17px;margin:0 0 8px;letter-spacing:-.01em}
 .detail .sum{margin:0 0 12px;color:var(--muted)}
-.badges{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.badges{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.badges:empty{display:none}
 .badge{font:11px var(--mono);border:1px solid var(--line);border-radius:3px;padding:2px 7px;color:var(--muted)}
 .badge.where{border-color:var(--accent);color:var(--accent)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:12px;overflow:hidden}
-.card .file{font:11px var(--mono);color:var(--muted);padding:7px 12px;border-bottom:1px solid var(--line)}
+.card summary{font:11px var(--mono);color:var(--muted);padding:7px 12px;cursor:pointer}
+.card[open] summary{border-bottom:1px solid var(--line)}
+.code-body{overflow:hidden}
 .card pre{margin:0;padding:12px;overflow-x:auto}
 .card code{font:12.5px/1.6 var(--mono);white-space:pre}
-.rlabel{font:11px var(--mono);color:var(--muted);margin:0 0 6px}
+.rlabel{font-size:14px;font-weight:600;color:var(--ink);margin:18px 0 8px;padding-left:8px;border-left:3px solid var(--accent);line-height:1.3}
 .result{padding:12px}
+.result .mock{border:0;padding:0;background:none}
 .mock{font:12px var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:10px}
 .mock table{border-collapse:collapse;width:100%;font-size:11.5px}
 .mock th,.mock td{border:1px solid var(--line);padding:4px 7px;text-align:left}
@@ -155,7 +159,7 @@ const STEPS = /*__STEPS__*/[];
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-let cur = 0, timer = null;
+let cur = 0, timer = null, codeOpen = true;
 
 function buildSteps(){
   let html = '', phase = null;
@@ -183,20 +187,37 @@ function highlight(s){
 }
 
 function detail(s){
-  let h = `<h2>${esc(s.title)}</h2><p class="sum">${esc(s.summary)}</p><div class="badges">`;
+  let h = `<h2>${esc(s.title)}</h2><div class="badges">`;
   if (s.where) h += `<span class="badge where">${esc(s.where)}</span>`;
   if (s.lang)  h += `<span class="badge">${esc(s.lang)}</span>`;
-  h += '</div>';
-  if (s.code && s.code.trim()) {
-    h += '<div class="card">';
-    if (s.file) h += `<div class="file">${esc(s.file)}</div>`;
-    h += `<pre><code>${esc(s.code.trim())}</code></pre></div>`;
-  }
+  h += `</div><p class="sum">${esc(s.summary)}</p>`;
   if (s.result && s.result.trim()) {
-    h += `<p class="rlabel">${esc(s.resultLabel || '이때 보이는 것')}</p>`;
+    h += `<h3 class="rlabel">${esc(s.resultLabel || '이때 보이는 것')}</h3>`;
     h += `<div class="card result">${s.result}</div>`;
   }
+  if (s.code && s.code.trim()) {
+    h += `<details class="card code"${codeOpen ? ' open' : ''}><summary>${esc(s.file || '코드')}</summary>`;
+    h += `<div class="code-body"><pre><code>${esc(s.code.trim())}</code></pre></div></details>`;
+  }
   $('detail').innerHTML = h;
+  const code = $('detail').querySelector('details.code');
+  if (code) code.querySelector('summary').onclick = e => slideCode(e, code);
+}
+
+// details 기본 토글은 즉시 열리고 닫혀서 높이 애니메이션은 직접 처리
+let codeAnim = null;
+function slideCode(e, code){
+  e.preventDefault();
+  const body = code.querySelector('.code-body');
+  const from = code.open ? body.getBoundingClientRect().height : 0;
+  // 단계를 넘겨도 사용자가 고른 코드 접힘 상태 유지
+  codeOpen = !codeOpen;
+  if (codeAnim) codeAnim.cancel();
+  code.open = true;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { code.open = codeOpen; return; }
+  const to = codeOpen ? body.scrollHeight : 0;
+  codeAnim = body.animate({ height: [from + 'px', to + 'px'] }, { duration: 250, easing: 'ease' });
+  codeAnim.onfinish = () => { codeAnim = null; code.open = codeOpen; };
 }
 
 function go(i){
