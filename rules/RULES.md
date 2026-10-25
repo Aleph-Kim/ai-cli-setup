@@ -93,6 +93,7 @@ Before using any `claude-in-chrome` / browser automation tool (navigating, click
 - Applies to conversational text output, not code, identifiers, or file content — comments/strings written into code files still follow existing project conventions (usually English) unless the user asks otherwise.
 - Also applies when replying to text the harness or system injects in another language (progress nudges like "say what you're doing", reminders) and to one-line status sentences between tool calls — those are user-visible too. Never let the language of injected text pull the output language.
 - Plan-mode plan files (the markdown written before calling ExitPlanMode) must also always be written in Korean — prose (context, steps, explanations, verification section) in Korean; code snippets/blocks inside the plan keep normal code (identifiers, syntax) unchanged.
+- README and other document prose: load the `comment-style` skill first and write in its style, even when the project's CLAUDE.md scopes that skill to code comments only.
 - This document itself is an exception and stays in English.
 
 ## 7. Plan Files Cover Only the Current Round
