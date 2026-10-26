@@ -9,7 +9,8 @@ import argparse, pathlib, re, sys
 #   - "상위 대분류" 이름은 docs-upload 스킬의 카테고리 체계와 반드시 일치시킨다.
 #     (skills/docs-upload/scripts/upload.py 가 이 표를 직접 불러와 사용)
 #   - 색 구분을 위해 한 대분류가 여러 규칙으로 쪼개질 수 있다 (예: 컴퓨터 사이언스).
-#   - 위에서부터 첫 부분 문자열 매칭이 채택되므로, 좁은 주제를 먼저 둔다.
+#   - 위에서부터 첫 매칭이 채택되므로, 좁은 주제를 먼저 둔다.
+#   - 영문 키워드는 단어 단위, 한글 키워드는 조사가 붙으므로 부분 문자열로 매칭한다.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # 개발/엔지니어링 도메인 (1차 우선 매칭)
@@ -47,7 +48,10 @@ DEV_DOMAIN_RULES = [
         [
             "docker", "k8s", "kubernetes", "도커", "쿠버네티스", "aws", "gcp", "azure",
             "cloud", "클라우드", "terraform", "ci/cd", "cicd", "nginx", "컨테이너",
-            "container", "배포", "deploy", "serverless", "lambda", "infra", "인프라"
+            "container", "배포", "deploy", "serverless", "lambda", "infra", "인프라",
+            "로드밸런서", "로드 밸런서", "load balancer", "로드밸런싱", "로드 밸런싱",
+            "load balancing", "부하 분산", "서버 클러스터", "스케일 아웃", "scale out",
+            "고가용성", "페일오버", "failover"
         ]
     ),
     (
@@ -157,10 +161,17 @@ def match_domain(topic: str):
     return matched[0] if matched else None
 
 
+def keyword_in(kw: str, t: str) -> bool:
+    # 짧은 영문 약어가 다른 단어 안에서 잡히는 오탐 방지 (uuid 안의 ui, linux 안의 ux)
+    if kw.isascii():
+        return re.search(rf"(?<![a-z0-9]){re.escape(kw)}(?:s|es)?(?![a-z0-9])", t) is not None
+    return kw in t
+
+
 def match_all_domains(topic: str) -> list[tuple[str, str]]:
     """주제에 걸리는 모든 (대분류, 색상) 규칙을 선언 순서대로 반환"""
     t = topic.lower()
-    return [(domain, color) for domain, color, keywords in ALL_DOMAIN_RULES if any(kw in t for kw in keywords)]
+    return [(domain, color) for domain, color, keywords in ALL_DOMAIN_RULES if any(keyword_in(kw, t) for kw in keywords)]
 
 
 def domain_of_color(color: str) -> str:
@@ -205,6 +216,88 @@ def cap_tall_svg(svg_open: str) -> str:
     if ratio < 0.35:
         return svg_open
     return svg_open + f' style="max-width:{round(420 / ratio)}px;margin:0 auto"'
+
+
+CODE_LINE_LIMIT = {"개념 모드": 10, "구현 모드": 15}
+TERM_LIMIT = 3
+
+STR_RE = re.compile(r"`(?:\\.|[^`\\])*`|'(?:\\.|[^'\\])*'|\"(?:\\.|[^\"\\])*\"")
+# 대문자 약어(DER), camelCase(retainUntilConsumed), 숫자 섞인 식별자(x5c, UInt64), 점이나 밑줄 포함 이름(app.js)
+TERM_RE = re.compile(
+    r"(?<![A-Za-z0-9])(?:[A-Z]{2,}[A-Za-z0-9]*|[a-z]+[A-Z][A-Za-z0-9]*|[A-Za-z]+[0-9][A-Za-z0-9]*|[A-Za-z0-9]+[._][A-Za-z0-9._]+)(?![A-Za-z0-9])"
+)
+
+
+def split_steps(js: str) -> list[str]:
+    """STEPS 배열 리터럴을 최상위 객체 소스 단위로 나눈다 (문자열 안의 괄호는 무시)"""
+    objs, depth, start, i = [], 0, 0, 0
+    while i < len(js):
+        c = js[i]
+        if c in "`'\"":
+            m = STR_RE.match(js, i)
+            i = m.end() if m else i + 1
+            continue
+        if c == "{":
+            if depth == 0:
+                start = i
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                objs.append(js[start:i + 1])
+        i += 1
+    return objs
+
+
+def step_field(obj: str, name: str) -> str:
+    m = re.search(rf"\b{name}\s*:\s*({STR_RE.pattern})", obj)
+    return m.group(1)[1:-1] if m else ""
+
+
+def step_ids(obj: str, name: str) -> list[str]:
+    m = re.search(rf"\b{name}\s*:\s*\[([^\]]*)\]", obj)
+    return re.findall(r"['\"]([^'\"]+)['\"]", m.group(1)) if m else []
+
+
+def edge_endpoints(svg: str) -> tuple[dict, int]:
+    """data-edge 별 (data-from, data-to)와, 양 끝 속성이 없어 점검할 수 없는 화살표 수"""
+    ends, missing = {}, 0
+    for tag in re.findall(r"<g\b[^>]*\bdata-edge=\"[^\"]+\"[^>]*>", svg):
+        e = re.search(r'data-edge="([^"]+)"', tag).group(1)
+        f, t = re.search(r'data-from="([^"]+)"', tag), re.search(r'data-to="([^"]+)"', tag)
+        if f and t:
+            ends[e] = (f.group(1), t.group(1))
+        else:
+            missing += 1
+    return ends, missing
+
+
+def check_steps(steps: str, svg: str, mode: str, topic: str = "") -> list[str]:
+    """단계별 코드 줄 수, 설명문 영문 용어 수, 켜진 화살표의 양 끝 노드 점검 경고"""
+    warnings = []
+    # 주제어 자체와 버전 번호는 독자가 이미 아는 말이라 용어 수에서 제외
+    topic_words = set(re.findall(r"[a-z0-9]+", topic.lower()))
+    limit = CODE_LINE_LIMIT.get(mode)
+    ends, missing = edge_endpoints(svg)
+    if missing:
+        warnings.append(f"data-from/data-to 없는 화살표 {missing}개, 양 끝 노드 점검 생략")
+    for n, obj in enumerate(split_steps(steps), 1):
+        code = step_field(obj, "code").strip("\n")
+        lines = code.count("\n") + 1 if code else 0
+        if limit and lines > limit:
+            warnings.append(f"{n}단계 코드 {lines}줄 ({mode} 상한 {limit}줄)")
+        terms = [
+            w for w in dict.fromkeys(TERM_RE.findall(step_field(obj, "summary")))
+            if w.lower() not in topic_words and not w[0].isdigit()
+        ]
+        if len(terms) > TERM_LIMIT:
+            warnings.append(f"{n}단계 설명에 영문 용어 {len(terms)}개 ({', '.join(terms)})")
+        nodes = set(step_ids(obj, "nodes"))
+        for e in step_ids(obj, "edges"):
+            for end in ends.get(e, ()):
+                if end not in nodes:
+                    warnings.append(f"{n}단계 화살표 {e}가 켜졌는데 {end} 노드가 꺼져 있음")
+    return warnings
 
 
 def category_colors() -> dict:
@@ -355,6 +448,8 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html, encoding="utf-8")
     print(f"생성 완료: {out_path}  ({len(html):,} bytes, accent: {accent_color})")
+    for w in check_steps(steps, svg, a.mode, a.topic):
+        print(f"경고: {w}")
     for n in notices:
         print(f"주의: {n}")
     if category:
