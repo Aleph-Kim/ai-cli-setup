@@ -8,4 +8,4 @@ observation-log.md 1447
 signals.md 234
 skill-authoring.md 1053
 starter-principles.md 504 2026-10-16 the marker is written after the answer, cited bodies are read, entry 23 covers the unmeasured baseline
-weekly-review.md 992
+weekly-review.md 1012 2026-10-26 one question per change in a five-part shape with the recommended option first, case-patch consolidation, the reasoning-slip check

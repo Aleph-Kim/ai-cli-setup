@@ -36,12 +36,34 @@ side by side.
 
 ## Approval policy
 
-**Interactive (user present):** always present observations grouped by
-skill (number, title, one-sentence summary), flag judgment calls as "needs
-your input", and wait for blanket or selective approval before applying.
-The grouped list lives in the review record and chat carries at most
-three next steps with a link to it (Step 3); the approval it asks for is
-still over the whole list.
+**Interactive (user present): one question per change, asked with the
+harness's question tool.** Each question carries exactly one change — one
+observation, or several whose fix is literally the same rule (say so:
+"the same problem, logged twice: 0115, 0120") — never a bundle of
+different changes under one option, which asks the user to approve
+something they cannot predict. Ask at most four questions per call and
+keep going until every outstanding decision is answered; never fall back
+to a blanket "apply all N?" unless the user asks for one. Every question
+has the same shape, in the user's language and in plain words a
+non-specialist can follow:
+
+1. the file that changes (skill and file, or the instruction file);
+2. one line of rule context, where the question depends on a rule the
+   user may not have in mind;
+3. which project or document it happened in (the entry's
+   `session_context`);
+4. what actually happened, as a short list of concrete events — never the
+   rule's wording alone;
+5. "after the change it looks like this", with one concrete example of
+   the new output or rule text (a report line, a warning the build
+   prints, the sentence before and after).
+
+The recommended option comes first and carries the label
+"(Recommended)", or its equivalent in the user's language; every option
+has a one-line description of what it does. The full decision list is
+saved in the review record (Step 7) as well. An answer saying the
+question was unclear is feedback about the question, not a "no": ask it
+again in plainer words with a concrete example.
 **Classify before you ask.** Any *disposition* option offered to the user
 (fold in, decline, revive, route to skill X) must be derived from the
 entries' bodies, never from their titles and `skill:` fields — a
@@ -83,21 +105,6 @@ with the refusal's words, hand it to the user in the closing summary as a
 step with exact paths, and continue the rest of the apply phase. Run
 preparatory work (anchors, backups) in calls of its own, never in the
 call that carries such an action, so one refusal does not take it down.
-
-**Separate the recommendation from the choice before counting agreement
-as evidence.** A decision that is SUBSTANTIVE — it changes a rule, retires
-a prior decision or sets a value — is presented as unlabelled options in a
-neutral order, and the recommendation is stated only after the pick is
-recorded, or in a separate line the user can skip; a status-quo
-confirmation (keep what is installed, keep the ceiling where it landed)
-stays recommendation-first, where the label costs nothing. The record
-notes per decision whether it was status-quo or substantive and whether
-the pick matched the recommendation; only the substantive, unlabelled
-picks feed the acceptance rate, and the tier moves only after a handful
-of reviews. The failure shape: every decision presented
-recommendation-first and labelled is accepted, and the loop cannot tell
-good recommendations from anchoring — yet reads the number as grounds to
-loosen.
 
 **A decision the user already made is applied, not re-asked.** Where an
 observation records a removal or restructure as DECIDED by the user AND
@@ -413,6 +420,23 @@ entries target the same member. Then, before anything is presented:
   verify it. Keep a workaround instruction only while it is needed, and
   identify the fix that will let a later review remove it. Implementing
   that fix still follows the user's scope and the approval policy.
+- **Consolidate case patches into the rule they share.** When three or
+  more OPEN entries target the same section of one skill, write their
+  common cause first and test whether one method rule (typically
+  "actually run it and check the result") covers each entry's case.
+  Propose that rule as one decision, with the entries as its evidence,
+  and keep a separate condition only for a case the rule does not cover.
+  Each entry's suggestion was written to stop the one incident that
+  produced it, so carried over verbatim they grow a section into a list
+  of cases, and the next incident adds another.
+- **Separate a missing rule from a reasoning slip.** Before an entry
+  becomes a question, decide whether the incident happened because no
+  rule covered it, or because an existing rule or plain care was not
+  applied (one of two listed problems was read, a rule already in the
+  instruction file was ignored). The second is asked with "close without
+  a rule" as the recommended option, naming the rule that already
+  covered it where there is one; a new rule for it is one more case
+  patch.
 - **An entry about a recurring act names its check.** Where the Issue is
   an act a session repeats, confirm the Suggested improvement names the
   check that catches a violation (`observation-log.md`, "Commands inside
@@ -468,16 +492,12 @@ entries target the same member. Then, before anything is presented:
   them. The log is the artefact most likely to be shared casually, and
   the authoring-time sweeps never see it.
 
-Interactive: save the full decision list — grouped by skill, as the
-Approval policy requires — in the review record (Step 7). In chat, show
-at most three recommended next steps, ordered by impact. For each, state
-**problem → concrete change → verification** in plain language; name
-whether the change belongs in a skill, agent instructions, or tooling.
-Link the full list and say how many decisions remain. Group duplicates
-and exclude already-fixed items before choosing the three. Await
-approval: the user may approve the three, the whole list in the record
-in one step, or a selection from it; a short list does not authorize the
-rest of the backlog.
+Interactive: save the full decision list in the review record (Step 7),
+then ask the decisions one by one in the shape the Approval policy sets,
+after grouping duplicates and closing already-applied entries. Only an
+explicit answer to a question authorizes its change; a question left
+unanswered authorizes nothing, and neither does an answer to a different
+question.
 
 **Cluster by decision BEFORE the escalation list is written.** An
 append-only log accumulates convergent entries by construction: the same
@@ -808,8 +828,8 @@ next write on a later day archives them.
 it completes ("Applying changes"). Save the complete record under
 `[workspace folder]/skill-observations/reviews/[date]/REVIEW.md`, using the
 template below. In chat, report what changed — one line per round with
-its commit hash — and its verification, followed by at most three
-remaining next steps in the Step 3 format. Link the record for the full
+its commit hash — and its verification, followed by any decision still
+unanswered, asked in the Approval policy's shape. Link the record for the full
 accounting; an observation count alone is not an outcome. Records are
 kept: no step prunes `reviews/`, and old ones are the user's to delete.
 The summary ends with the line **"N rounds committed: <hash> …"**, taken
