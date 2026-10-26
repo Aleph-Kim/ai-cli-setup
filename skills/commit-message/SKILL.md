@@ -20,6 +20,7 @@ Draft a commit message for the current changes using the user's fixed personal t
 - Use plain everyday verbs: 추가 / 수정 / 변경 / 삭제 / 정리. Avoid showier synonyms like 전환·도입.
 - The title uses only characters typable on a standard keyboard (Hangul, letters, digits, ASCII punctuation): no middle dot (`·`), arrows (`→`, `›`), em dash (`—`), ellipsis character (`…`) or emoji (no gitmoji either).
 - Drop the object particle (을/를) when the title reads naturally as a noun phrase: `… 이동 버튼 비동기 방식으로 변경`, not `… 이동 버튼을 … 방식으로 변경`.
+- Join two changes in one title with 및 or 와/과 after a noun form, never with a verb conjugation like 변경하고 or 추가하며: `feat: 진단 API 요청 한도 하루 단위 변경 및 개발 환경 제외`, not `feat: 진단 API 요청 한도 하루 단위로 변경하고 개발 환경에서 제외`.
 - Use the user's own domain vocabulary — e.g. the list screen of an admin CRUD entity is "리스트페이지", not "목록".
 - Calibration (same diff, both valid `type`): good — `refactor: 관리자 리스트페이지 순서 이동 버튼 비동기 방식으로 변경`; too verbose — `refactor: 관리자 목록 순서 이동 버튼을 드래그와 동일한 비동기 저장 방식으로 전환`.
 
