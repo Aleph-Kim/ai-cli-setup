@@ -14,7 +14,11 @@ Usage
 
   # convert an active log into a target directory
   python3 migrate-log.py --convert log.md --out observation-log/ \
-      [--id-floor-from archive/]
+      [--id-floor-from archive/] [--known-skills <skills dir>] [--overrides ov.json]
+
+Exit status: 0 on success; 2 when the overrides file sets a key the output
+cannot carry (OVERRIDE_KEYS) or a value of the wrong shape, or when
+--known-skills is not a directory — named, and before any file is written.
 
 Design notes
 ------------
@@ -62,14 +66,34 @@ REVIEW_FLAGS = {
     "duplicate-id",
     "body-empty",
     "date-not-iso",
+    "skill-in-qualifier",
 }
+
+# Keys an overrides file may set: exactly the fields render() writes. Any
+# other key used to be stored on the record and silently dropped at write
+# time, so an adopter's fix was in the input, absent from the output, and
+# nothing in between said so. Value shapes are checked too: a string where
+# a list belongs was rendered one character per entry.
+OVERRIDE_LIST_KEYS = {"skill", "proposes_skill", "target_file"}
+OVERRIDE_TEXT_KEYS = {"title", "status", "type", "area", "date", "session_context",
+                      "resolved", "resolution", "status_note", "reference",
+                      "siblings_checked", "parked_until", "commands_verified"}
+OVERRIDE_KEYS = OVERRIDE_LIST_KEYS | OVERRIDE_TEXT_KEYS | {"skill_qualifiers"}
+
+# Fields the target format requires on every file (SKILL.md, File format).
+# Reported, never fabricated: a placeholder would hide the missing judgement
+# the field exists to make visible.
+MANDATORY_TARGET_FIELDS = ("status", "siblings_checked")
 
 ENTRY_RE = re.compile(r"^### Observation (\d+):[ \t]*(.*)$")
 LABEL_RE = re.compile(r"^\*\*([A-Za-z][A-Za-z /-]*):\*\*[ \t]*(.*)$")
 ISO_DATE_RE = re.compile(r"(\d{4}-\d{2}-\d{2})")
 STATUS_RE = re.compile(r"^(OPEN|ACTIONED|DECLINED|SUPERSEDED)\b(.*)$", re.I)
 NEW_SKILL_RE = re.compile(r"^New skill candidate:\s*(.+)$", re.I)
-SKILL_NAME_RE = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)$")
+# A skill name is a bare token or a scoped `plugin:skill` identifier — the
+# literal string the Skill tool takes on platforms that namespace plugin
+# skills (e.g. `dev-workflow:next`). The colon is part of the name.
+SKILL_NAME_RE = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(:[A-Za-z0-9][A-Za-z0-9._-]*)?$")
 
 
 def split_top_level(text, seps=";"):
@@ -90,10 +114,23 @@ def split_top_level(text, seps=";"):
 
 
 def slugify(title, maxlen=60):
-    s = title.lower()
-    s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
+    """Kebab-case slug that keeps SOME signal from any script.
+
+    The directory listing is the index, so a slug must carry the title's
+    meaning in every language: ASCII-only stripping turned a Korean corpus
+    into thirteen `untitled` files. Latin accents are folded to their base
+    letters (NFKD, combining marks dropped); other scripts keep their word
+    characters, since modern filesystems and git handle UTF-8 names.
+    """
+    import unicodedata
+    s = unicodedata.normalize("NFKD", title)
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    s = unicodedata.normalize("NFC", s).lower()   # recompose (Hangul jamo -> syllables)
+    # word characters of any script stay; everything else becomes a hyphen
+    s = re.sub(r"[^\w]+", "-", s, flags=re.UNICODE).replace("_", "-").strip("-")
     if len(s) > maxlen:
-        s = s[:maxlen].rsplit("-", 1)[0]
+        cut = s[:maxlen].rsplit("-", 1)[0]
+        s = cut or s[:maxlen]
     return s or "untitled"
 
 
@@ -198,6 +235,18 @@ ABSORB_RE = re.compile(
     r"([a-z0-9][a-z0-9._-]*)", re.I)
 
 
+def skills_in_text(text, known_skills, exclude=()):
+    """Known skill names that appear as whole tokens in free text."""
+    if not known_skills or not text:
+        return []
+    found = []
+    for tok in re.findall(r"[A-Za-z0-9][A-Za-z0-9._:-]*[A-Za-z0-9]|[A-Za-z0-9]", text):
+        for cand in (tok, tok.rsplit(":", 1)[-1]):
+            if cand in known_skills and cand not in exclude and cand not in found:
+                found.append(cand)
+    return found
+
+
 def parse_skill(raw, area, known_skills, flags):
     """Return (skill_list, proposes_skill_list, area, qualifiers).
 
@@ -225,6 +274,8 @@ def parse_skill(raw, area, known_skills, flags):
                 absorbs = [am.group(1)]
                 qual = None
         quals = {cand: qual} if qual else {}
+        if qual and skills_in_text(qual, known_skills, exclude=absorbs + [cand]):
+            flags.append("skill-in-qualifier")
         if not SKILL_NAME_RE.match(cand):
             flags.append("candidate-name-unparseable")
             return absorbs, [], area, {"_unparsed": [rest]}
@@ -262,10 +313,21 @@ def parse_skill(raw, area, known_skills, flags):
         if gqual and len(subnames) > 1:
             quals.setdefault("_group", []).append(f"{body} -> ({gqual})")
 
+    # A qualifier that names another known skill holds a target the `skill:`
+    # list lacks — the field every scan, review bucket and family check
+    # filters on. That needs a decision, so it is a review flag and the text
+    # is never promoted into `area`, where it would vanish from every report.
+    qual_text = " ".join(v if isinstance(v, str) else " ".join(v)
+                         for k, v in quals.items() if k != "_unparsed")
+    if skills_in_text(qual_text, known_skills, exclude=names):
+        flags.append("skill-in-qualifier")
     # clean single-skill case: promote the qualifier into an empty area field
-    if len(names) == 1 and not area and len(quals) == 1 and names[0] in quals:
+    elif len(names) == 1 and not area and len(quals) == 1 and names[0] in quals:
         return names, [], quals[names[0]], {}
-    if quals:
+    # An unparseable name is already flagged above; the qualifier flag is
+    # for genuine qualifiers, so do not raise it a second time for the same
+    # cause (one malformed token used to produce two review flags).
+    if any(k not in ("_unparsed",) for k in quals):
         flags.append("skill-qualifiers-need-review")
     return names, [], area, quals
 
@@ -329,6 +391,10 @@ def render(rec):
     fm.append("skill: [" + ", ".join(y(s) for s in rec["skill"]) + "]")
     if rec["proposes_skill"]:
         fm.append("proposes_skill: [" + ", ".join(y(c) for c in rec["proposes_skill"]) + "]")
+    if rec.get("target_file"):
+        fm.append("target_file: [" + ", ".join(y(t) for t in rec["target_file"]) + "]")
+    if rec.get("siblings_checked"):
+        fm.append(f"siblings_checked: {y(rec['siblings_checked'])}")
     if rec["area"]:
         fm.append(f"area: {y(rec['area'])}")
     if rec["date"]:
@@ -339,12 +405,16 @@ def render(rec):
         fm.append(f"resolved: {rec['resolved']}")
     elif rec["resolved_hint"]:
         fm.append(f"resolved: null   # candidate from body text: {rec['resolved_hint']} — unconfirmed")
+    if rec.get("parked_until"):
+        fm.append(f"parked_until: {y(rec['parked_until'])}")
     if rec["resolution"]:
         fm.append(f"resolution: {y(rec['resolution'])}")
     if rec.get("status_note"):
         fm.append(f"status_note: {y(rec['status_note'])}")
     if rec["reference"]:
         fm.append(f"reference: {y(rec['reference'])}")
+    if rec.get("commands_verified"):
+        fm.append(f"commands_verified: {y(rec['commands_verified'])}")
     if rec["skill_qualifiers"]:
         fm.append("skill_qualifiers:")
         for k, v in rec["skill_qualifiers"].items():
@@ -379,6 +449,16 @@ def id_floor_from(paths):
 
 
 def main():
+    # The report prints observation titles, which are log content in any
+    # script; never let the console's encoding decide whether a completed
+    # conversion exits 0 (a cp1252 console raised UnicodeEncodeError on a
+    # title containing an arrow AFTER every file had been written).
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(errors="replace")
+            except (ValueError, AttributeError):
+                pass
     ap = argparse.ArgumentParser()
     ap.add_argument("logs", nargs="+")
     ap.add_argument("--check", action="store_true", help="parse and report only")
@@ -390,14 +470,44 @@ def main():
     args = ap.parse_args()
 
     known = set()
-    if args.known_skills and os.path.isdir(args.known_skills):
+    if args.known_skills:
+        # A mistyped directory used to be ignored, which silently switched
+        # off every check the option exists for.
+        if not os.path.isdir(args.known_skills):
+            print(f"--known-skills: not a directory: {args.known_skills}", file=sys.stderr)
+            sys.exit(2)
         known = {d for d in os.listdir(args.known_skills)
                  if os.path.isdir(os.path.join(args.known_skills, d))}
+    for p in args.id_floor_from:
+        if not os.path.isdir(p):
+            print(f"note: --id-floor-from {p} does not exist; the id floor comes from the "
+                  f"other sources only")
 
     overrides = {}
     if args.overrides:
         with open(args.overrides, encoding="utf-8") as fh:
             overrides = {k: v for k, v in json.load(fh).items() if not k.startswith("_")}
+        bad = []
+        for oid, ov in overrides.items():
+            for k, v in ov.items():
+                if k in ("_resolves", "_reason"):
+                    continue
+                if k not in OVERRIDE_KEYS:
+                    bad.append(f"#{oid}: key {k!r} is not written to the file "
+                               f"(settable: {', '.join(sorted(OVERRIDE_KEYS))})")
+                elif k in OVERRIDE_LIST_KEYS and not (
+                        isinstance(v, list) and all(isinstance(x, str) for x in v)):
+                    bad.append(f"#{oid}: {k!r} must be a list of strings, got {v!r}")
+                elif k in OVERRIDE_TEXT_KEYS and not (v is None or isinstance(v, str)):
+                    bad.append(f"#{oid}: {k!r} must be a string or null, got {v!r}")
+                elif k == "skill_qualifiers" and not (v is None or isinstance(v, dict)):
+                    bad.append(f"#{oid}: 'skill_qualifiers' must be an object or null, got {v!r}")
+        if bad:
+            print("overrides rejected — nothing written; an accepted key that never reaches "
+                  "the file is the outcome this refuses:", file=sys.stderr)
+            for b in bad:
+                print(f"  {b}", file=sys.stderr)
+            sys.exit(2)
 
     records, seen = [], {}
     for path in args.logs:
@@ -433,6 +543,19 @@ def main():
     print(f"\nneeds human review: {len(needs_review)}/{len(records)}")
     print(f"parsed losslessly:  {len(records)-len(needs_review)}/{len(records)}")
 
+    # Source fidelity and target conformance are two success criteria. The
+    # lines above answer the first; a field the legacy format never defined
+    # is exactly the one they cannot report on. Enumerate the target's own
+    # mandatory fields, not the mapping table in migration.md.
+    headers = [render(r).split("\n---", 1)[0] for r in records]
+    print("\ntarget conformance (mandatory frontmatter, converted set):")
+    for field in MANDATORY_TARGET_FIELDS:
+        have = sum(1 for h in headers if f"\n{field}:" in h)
+        note = ""
+        if field == "siblings_checked" and have < len(records):
+            note = " — the first review's sibling backfill populates this; nothing else will"
+        print(f"  {field:<18}{have}/{len(records)}{note}")
+
     if not args.convert:
         return
 
@@ -449,6 +572,11 @@ def main():
     with open(os.path.join(arch, ".id-floor"), "w") as fh:
         fh.write(f"{floor}\n")
 
+    slugs = [slugify(r["title"]) for r in records]
+    collapsed = sum(1 for x in slugs if x == "untitled")
+    if records and collapsed / len(records) > 0.2:
+        print(f"\nWARNING: {collapsed}/{len(records)} slugs collapsed to 'untitled' — "
+              "the listing is no longer an index; check the titles' script and the slug rule")
     print(f"\nwrote {len(records)} files to {out}/")
     print(f"id floor: {floor}  (-> {os.path.join(arch, '.id-floor')})")
     flagged = [r for r in records if set(r["flags"]) & REVIEW_FLAGS]
@@ -457,7 +585,8 @@ def main():
         for r in flagged:
             why = ", ".join(sorted(set(r["flags"]) & REVIEW_FLAGS))
             print(f"  #{r['id']:<5} {why:<42} {r['title'][:56]}")
-    info = [r for r in records if set(r["flags"]) - REVIEW_FLAGS]
+    info = [r for r in records if set(r["flags"]) - REVIEW_FLAGS
+            and not set(r["flags"]) & REVIEW_FLAGS]
     if info:
         print(f"\n{len(info)} file(s) recorded extra detail (no action needed): "
               f"skill qualifiers preserved in `skill_qualifiers`")
