@@ -220,6 +220,8 @@ def cap_tall_svg(svg_open: str) -> str:
 
 CODE_LINE_LIMIT = {"개념 모드": 10, "구현 모드": 15}
 TERM_LIMIT = 3
+MIXED_STEP_LIMIT = 11
+MODE_BADGE = {"혼합 모드": "개념 + 구현"}
 
 STR_RE = re.compile(r"`(?:\\.|[^`\\])*`|'(?:\\.|[^'\\])*'|\"(?:\\.|[^\"\\])*\"")
 # 대문자 약어(DER), camelCase(retainUntilConsumed), 숫자 섞인 식별자(x5c, UInt64), 점이나 밑줄 포함 이름(app.js)
@@ -277,15 +279,23 @@ def check_steps(steps: str, svg: str, mode: str, topic: str = "") -> list[str]:
     warnings = []
     # 주제어 자체와 버전 번호는 독자가 이미 아는 말이라 용어 수에서 제외
     topic_words = set(re.findall(r"[a-z0-9]+", topic.lower()))
-    limit = CODE_LINE_LIMIT.get(mode)
     ends, missing = edge_endpoints(svg)
     if missing:
         warnings.append(f"data-from/data-to 없는 화살표 {missing}개, 양 끝 노드 점검 생략")
-    for n, obj in enumerate(split_steps(steps), 1):
+    objs = split_steps(steps)
+    first_phase = step_field(objs[0], "phase") if objs else ""
+    if mode == "혼합 모드" and len(objs) > MIXED_STEP_LIMIT:
+        warnings.append(f"혼합 모드 단계 {len(objs)}개 (상한 {MIXED_STEP_LIMIT}개)")
+    for n, obj in enumerate(objs, 1):
+        # 혼합 모드는 첫 phase만 개념 모드 기준, 나머지는 구현 모드 기준
+        step_mode = mode
+        if mode == "혼합 모드":
+            step_mode = "개념 모드" if step_field(obj, "phase") == first_phase else "구현 모드"
+        limit = CODE_LINE_LIMIT.get(step_mode)
         code = step_field(obj, "code").strip("\n")
         lines = code.count("\n") + 1 if code else 0
         if limit and lines > limit:
-            warnings.append(f"{n}단계 코드 {lines}줄 ({mode} 상한 {limit}줄)")
+            warnings.append(f"{n}단계 코드 {lines}줄 ({step_mode} 상한 {limit}줄)")
         terms = [
             w for w in dict.fromkeys(TERM_RE.findall(step_field(obj, "summary")))
             if w.lower() not in topic_words and not w[0].isdigit()
@@ -330,7 +340,7 @@ def main():
     p.add_argument("--definition", help="한 눈 정의 블록(HTML 조각) 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
     p.add_argument("--links", help="참고 링크 블록(HTML 조각) 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
     p.add_argument("--topic", required=True)
-    p.add_argument("--mode", required=True, choices=["개념 모드", "구현 모드"])
+    p.add_argument("--mode", required=True, choices=["개념 모드", "구현 모드", "혼합 모드"])
     p.add_argument("--accent", default=None, help="악센트 색상 hex (예: #059669). 미지정 시 주제 기반 자동 선택")
     p.add_argument("--out", default=None, help="최종 HTML 파일 경로 (미지정 시 /tmp/eli5-build/<slug>.html 로 자동 결정)")
     a = p.parse_args()
@@ -442,7 +452,7 @@ def main():
         html = re.sub(r'\s*<section class="refs">.*?</section>', "", html, flags=re.DOTALL)
     html = html.replace("/*__STEPS__*/[]", steps)
     html = html.replace("__TOPIC__", a.topic)
-    html = html.replace("__MODE__", a.mode)
+    html = html.replace("__MODE__", MODE_BADGE.get(a.mode, a.mode))
     html = html.replace("__ACCENT__", accent_color)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)

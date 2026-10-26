@@ -31,6 +31,14 @@ class CheckStepsTest(unittest.TestCase):
         steps = f"[{{ summary: '', code: `{code}`, nodes: [], edges: [] }}]"
         self.assertIn("1단계 코드 16줄 (구현 모드 상한 15줄)", build.check_steps(steps, self.SVG, "구현 모드"))
 
+    def test_mixed_mode_uses_concept_limit_only_in_first_phase(self):
+        code = "\n".join(f"line{i}" for i in range(11))
+        steps = (
+            f"[{{ phase: '구조 이해', summary: '', code: `{code}` }},"
+            f" {{ phase: '구현', summary: '', code: `{code}` }}]"
+        )
+        self.assertEqual(build.check_steps(steps, self.SVG, "혼합 모드"), ["1단계 코드 11줄 (개념 모드 상한 10줄)"])
+
     def test_summary_with_many_english_terms(self):
         steps = "[{ summary: 'x5c 안의 OID를 DER로 풀고 retainUntilConsumed 확인', nodes: [], edges: [] }]"
         self.assertIn(
