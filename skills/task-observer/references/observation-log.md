@@ -77,8 +77,8 @@ here: run this, do not work down the tree above by hand.
 
 ```bash
 d="[ABSOLUTE PATH]/skill-observations"   # the pinned path, quoted: it may contain a space; bash, not sh
-[ -e "$d/log.md" ] && [ ! -d "$d/observation-log" ] && { echo "LEGACY log.md — run the migration (references/migration.md) before creating anything"; exit 1; }
-[ -e "$d/log.md" ] && [ -d "$d/observation-log" ] && { echo "SPLIT STORE — log.md holds $(grep -c '^### Observation ' "$d/log.md") observations not in observation-log/ (an older installed copy still writes the legacy file); migrate the remainder (references/migration.md), re-issuing ids from the directory's counter"; exit 1; }
+[ -e "$d/log.md" ] && [ ! -d "$d/observation-log" ] && { echo "LEGACY log.md — a pre-3.0 single-file log this install cannot convert; stop and tell the user before creating anything"; exit 1; }
+[ -e "$d/log.md" ] && [ -d "$d/observation-log" ] && { echo "SPLIT STORE — log.md holds $(grep -c '^### Observation ' "$d/log.md") observations not in observation-log/ (an older installed copy still writes the legacy file); merge the remainder by hand with the user, re-issuing ids from the directory's counter"; exit 1; }
 c=; for x in observation-log observation-log/archive last-review-date.txt cross-cutting-principles.md; do [ -e "$d/$x" ] || c="$c${c:+,}$x"; done   # what this run creates
 mkdir -p "$d/observation-log/archive"
 [ -e "$d/last-review-date.txt" ] || printf 'never\n' > "$d/last-review-date.txt"   # the literal `never`, never a date: a date means a review actually ran
@@ -118,10 +118,9 @@ file system` or a permission error on a workspace path the harness's
 write allowlist names, the likely cause is that the path does not exist
 yet and the sandbox cannot create it (`environments.md`, "Anchoring the
 workspace", "A grant names a path"). Say that to the user in one line and
-hand them the fix — create `skill-observations/` and `skill-updates/`
-under the pinned root from outside the sandbox — instead of retrying
-through another interface or falling through to the unwritable-log or
-no-filesystem branches.
+hand them the fix — create `skill-observations/` under the pinned root
+from outside the sandbox — instead of retrying through another interface
+or falling through to the unwritable-log branch.
 
 The assertion loop is the half that matters, because the four artefacts
 fail differently and only one of them complains:
@@ -168,7 +167,7 @@ promise about the rest.
 | `date` | Date logged, `YYYY-MM-DD`. |
 | `session_context` | What was being worked on. |
 | `resolved` | Resolution date; set only when status is `actioned`, `declined` or `superseded`. Archival is gated on it. |
-| `resolution` | What was done, or why declined. When the fix is a prescription (a rule, a check, a form to use), an `actioned` resolution names where it now lives — a file and section, a staged skill copy, or a registered backlog entry. If no such place can be named, the prescription has been described, not applied: leave the entry `open`, or resolve the part that landed and carry the rest in a carrier observation (below). A review's own resolution already names the staged copy (`weekly-review.md`, Step 6); this is the rule for a resolution set outside a review. |
+| `resolution` | What was done, or why declined. When the fix is a prescription (a rule, a check, a form to use), an `actioned` resolution names where it now lives — a file and section, a commit, or a registered backlog entry. If no such place can be named, the prescription has been described, not applied: leave the entry `open`, or resolve the part that landed and carry the rest in a carrier observation (below). A review's own resolution already names the commit (`weekly-review.md`, Step 6); this is the rule for a resolution set outside a review. |
 | `reference` | Optional path to saved session-local evidence. |
 | `commands_verified` | One clause per executable command, and per predicate (a regex, a search pattern, a hook or check condition), the body quotes: `run`, with what it returned — for a predicate, whether it matched the positive case and the negative — or `NOT RUN` with why; the literal `none` where the body quotes neither. Blank on a body that quotes a command or predicate means it was never run. See "Commands inside an observation" below. |
 | `skill_qualifiers` | Optional map: skill name → the section or part of that skill meant. |
@@ -189,8 +188,7 @@ why a near-miss name is flagged rather than skipped wherever a check runs.
 **An entry is UTF-8 without a byte order mark.** Every header reader tests
 line 1 for `---`, and a BOM in front of it hides the header: the scan
 skips the entry with `parsed` one below `files`, and the archival sweep
-never moves it (`environments.md`, "Windows hosts: what reaches the shell
-and the file").
+never moves it.
 
 ### Unquoted `: ` in a prose value — how far it drifts before anyone notices
 
@@ -1043,8 +1041,8 @@ earlier in the session is suddenly missing, or the id check returns empty
 in a log you know is populated, HALT and re-probe the structure (is there
 an `observation-log/`? a `log.md.migrated`?) — a parallel session may have
 migrated or reorganised the storage. Never let an append silently recreate
-a missing target: that converts a migration signal into corruption (see
-`migration.md` on coexistence with live sessions). An empty read over
+a missing target: that converts a migration signal into corruption. An
+empty read over
 content you know exists is the same signal ("An empty scan over a
 non-empty log is a broken command", above).
 
@@ -1087,7 +1085,7 @@ echo. Apparent agreement suppresses verification more effectively than
 disagreement does, so this rule binds hardest exactly where it feels
 least necessary. The same holds for a hand-maintained ledger or manifest
 read to judge an artefact against it — excerpt to find an entry, full
-text to judge one (`weekly-review.md`, "Staged-work reconciliation gate").
+text to judge one.
 
 **A change you did not make resolves an observation point by point,
 never title against title** (core, Acting on Observations). A point
@@ -1158,8 +1156,7 @@ file it has not read in the session, read the skeleton the create just
 made before writing the body: the refusal is keyed on that state, and it
 reads like a harness fault rather than a consequence of the create. A quoted heredoc is exact only where the
 shell receives the command as typed; on a host whose shell tool rewrites
-it in transit (`environments.md`, "Windows hosts: what reaches the shell
-and the file"), the body goes through the editing tool. Where the shell is that only path, write the
+it in transit, the body goes through the editing tool. Where the shell is that only path, write the
 whole file with a QUOTED heredoc: quoting the delimiter disables every
 substitution, so the body cannot carry variables — the id and the date go in as
 the literal placeholders `__ID__` and `__DATE__`, which `scripts/new-observation.sh --body <file>` replaces everywhere on its create (the body file is read as data, so a backticked path survives); with the inline snippet and no helper, `printf` the frontmatter and append a quoted-heredoc body —
@@ -1333,7 +1330,7 @@ layout: entries archived before the dated rollups existed, which a review
 cleared in one pass and no file now holds — unrecoverable, so the id
 sequence starts at the first entry a rollup kept, a scar rather than an
 offset; legacy `log-YYYY-MM-DD.md` rollups from a pre-3.0 install, left
-beside the per-file archive untouched, not converted (see `migration.md`)
+beside the per-file archive untouched, not converted
 and not scanned; and the per-observation `NNNN-slug.md` files the sweep
 writes. Any enumeration of "the whole log" covers BOTH file generations,
 and its count is reconciled against an independent handle — the id range,

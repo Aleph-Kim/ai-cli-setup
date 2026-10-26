@@ -88,7 +88,7 @@ if [ ! -d "$d" ]; then
     echo "workspace root does not exist: '$root' — check the pinned path" >&2; exit 2
   fi
   if [ -e "$root/skill-observations/log.md" ]; then
-    echo "LEGACY log.md under '$root/skill-observations' and no observation-log/ — run the migration (references/migration.md) first" >&2; exit 2
+    echo "LEGACY log.md under '$root/skill-observations' and no observation-log/ — a pre-3.0 log this install cannot convert; tell the user" >&2; exit 2
   fi
   echo "NOTE: $name: no observation log yet at '$d' — a first run, before Session Start step 1 creates it; not 0 open. Re-run this lookup once for each skill loaded in this batch after the Workspace creation command"
   exit 0

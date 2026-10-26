@@ -167,7 +167,7 @@ printf 'files: %s  parsed: %s  suspect (awk, a floor): %s  archive-suspect: %s\n
 # Report it with its entry count; the creation command refuses on it too.
 lg="$root/skill-observations/log.md"
 if [ -e "$lg" ]; then
-  echo "SPLIT STORE — log.md holds $(grep -c '^### Observation ' "$lg" | tr -d ' ') observations not in observation-log/: an older installed copy of the skill still writes the legacy file; name each copy's version, then migrate the remainder (references/migration.md) with ids re-issued from this directory's counter"
+  echo "SPLIT STORE — log.md holds $(grep -c '^### Observation ' "$lg" | tr -d ' ') observations not in observation-log/: an older installed copy of the skill still writes the legacy file; name each copy's version, then merge the remainder by hand with the user, ids re-issued from this directory's counter"
   fx=$((fx + 1))
 fi
 

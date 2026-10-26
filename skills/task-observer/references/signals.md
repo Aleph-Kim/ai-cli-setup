@@ -211,9 +211,9 @@ PROPERTY the step exists for, not the command's exit. A handover whose
 failure was detected by the recipient reading output is an observation, and
 its second occurrence is a barrier (above), not a rewording.
 A path is the commonest such instruction: one that resolves inside the
-agent's execution context can point at nothing from the user's shell,
-packaging or synced folders (`environments.md`, "Paths handed across a
-boundary are resolved from the far side").
+agent's execution context can point at nothing from the user's shell or
+synced folders, so resolve it once from the user's side before handing
+it over.
 
 ## A command's risk is what it does, not what it was reached for
 
