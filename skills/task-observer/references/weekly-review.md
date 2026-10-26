@@ -424,8 +424,8 @@ entries target the same member. Then, before anything is presented:
   more OPEN entries target the same section of one skill, write their
   common cause first and test whether one method rule (typically
   "actually run it and check the result") covers each entry's case.
-  Propose that rule as one decision, with the entries as its evidence,
-  and keep a separate condition only for a case the rule does not cover.
+  Propose it as one decision — entries as evidence, per-case conditions as
+  the alternative — and keep a separate condition only for a case it misses.
   Each entry's suggestion was written to stop the one incident that
   produced it, so carried over verbatim they grow a section into a list
   of cases, and the next incident adds another.
