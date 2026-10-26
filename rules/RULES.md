@@ -119,8 +119,7 @@ Before using any `claude-in-chrome` / browser automation tool (navigating, click
 - After completing each task/deliverable, check the observation records written this session and report a one-line summary (ids and titles, or "none logged and why").
 - When loading any skill, check the observation log for OPEN observations tagged to that skill. Apply their insights to the current work, even if the skill file hasn't been updated yet.
 - The observation log lives at:
-  `/Users/aleph/Desktop/my project/ai-cli-setup/skill-observations/observation-log/`
-  (or `/Users/aleph/Desktop/my project/skills/skill-observations/observation-log/` before rename)
+  `/Users/Aleph/Desktop/my_project/ai-cli-setup/skill-observations/observation-log/`
   Never resolve the workspace from the current working directory or ephemeral checkout paths.
 
 ## 10. No Self-Initiated Actions Without Explicit Instruction
