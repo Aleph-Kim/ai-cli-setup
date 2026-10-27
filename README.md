@@ -14,6 +14,7 @@ AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 �
 터미널 하단에 모델명, Quota(5시간/주간 사용량 및 리셋 시각) 등을 표시하는 커스텀 상태표시줄 스크립트입니다.
 - `statusline/agy-statusline.js` -> `~/.gemini/antigravity-cli/statusline.js`
 - `statusline/claude-statusline.sh` -> `~/.claude/statusline.sh`
+  - 매 턴 RunCat Neo Custom Metrics용 사용량 스냅샷(모델, 컨텍스트, 5시간/주간 사용량)을 `~/.claude/runcat-usage.json`에 함께 기록
 
 ### 3. Skills (`skills/`)
 - `comment-style` — 코드 주석을 개인 고유 스타일(한글, WHY 중심)로 작성
