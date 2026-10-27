@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """셸 템플릿에 주제 · SVG · STEPS 배열 · 악센트 색상을 주입해 최종 HTML을 만든다."""
-import argparse, pathlib, re, sys
+import argparse, json, pathlib, re, sys
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 도메인 분류표 (단일 출처)
@@ -205,9 +205,10 @@ def resolve_category(topic: str) -> str:
     return matched[0] if matched else ""
 
 
-def cap_tall_svg(svg_open: str) -> str:
+def cap_tall_svg(svg_open: str, min_font: float | None = None) -> str:
     """세로로 긴 다이어그램(viewBox 높이/폭 0.35 이상)의 렌더링 높이를 420px 안팎으로 제한하는 max-width 주입
-    (폭 100%로 늘어나 하단 단계 설명이 화면 밖으로 밀리는 문제 방지)"""
+    (폭 100%로 늘어나 하단 단계 설명이 화면 밖으로 밀리는 문제 방지).
+    단, 가장 작은 글자(min_font)가 화면에서 12px 미만이 될 만큼은 줄이지 않는다."""
     m = re.search(r'viewBox="([^"]*)"', svg_open)
     if not m:
         return svg_open
@@ -215,7 +216,83 @@ def cap_tall_svg(svg_open: str) -> str:
     ratio = h / w
     if ratio < 0.35:
         return svg_open
-    return svg_open + f' style="max-width:{round(420 / ratio)}px;margin:0 auto"'
+    cap = 420 / ratio
+    if min_font:
+        cap = max(cap, w * 12 / min_font)
+    return svg_open + f' style="max-width:{round(cap)}px;margin:0 auto"'
+
+
+def _attr(tag: str, name: str) -> str | None:
+    m = re.search(rf'\s{name}="([^"]*)"', tag)
+    return m.group(1) if m else None
+
+
+def check_highlight(svg: str, steps: str) -> tuple[list[str], list[str]]:
+    """단계별 하이라이트가 그림과 어긋나는지 검사해 (오류, 경고) 목록을 반환한다.
+    - data-edge 는 data-from / data-to 로 연결 하나만 가리켜야 하고, 밝은 화살표의 양 끝 노드도 밝아야 한다
+    - data-parent 가 있는 노드가 밝으면 그 부모(상자, 영역 라벨)도 밝아야 한다"""
+    errors, warnings = [], []
+    nodes = {}
+    for tag in re.findall(r"<g\s[^>]*data-node=[^>]*>", svg):
+        nodes[_attr(tag, "data-node")] = _attr(tag, "data-parent")
+    edges = {}
+    for tag, body in re.findall(r"(<g\s[^>]*data-edge=[^>]*>)(.*?)</g>", svg, flags=re.DOTALL):
+        eid, src, dst = _attr(tag, "data-edge"), _attr(tag, "data-from"), _attr(tag, "data-to")
+        edges[eid] = (src, dst)
+        if not src or not dst:
+            errors.append(f"화살표 {eid}: data-from / data-to 가 없음")
+        for end in (src, dst):
+            if end and end not in nodes:
+                errors.append(f"화살표 {eid}: 끝 노드 {end} 가 SVG에 없음")
+        if len(re.findall(r"<(?:path|line|polyline)\b", body)) > 1:
+            errors.append(f"화살표 {eid}: 선이 2개 이상. 끝점마다 data-edge 를 나눌 것")
+    for nid, parent in nodes.items():
+        if parent and parent not in nodes:
+            errors.append(f"노드 {nid}: data-parent {parent} 가 SVG에 없음")
+
+    ids = lambda s: re.findall(r"['\"]([^'\"]+)['\"]", s)
+    node_lists = [ids(s) for s in re.findall(r"\bnodes\s*:\s*\[([^\]]*)\]", steps)]
+    edge_lists = [ids(s) for s in re.findall(r"\bedges\s*:\s*\[([^\]]*)\]", steps)]
+    if len(node_lists) != len(edge_lists):
+        errors.append("steps.js 의 nodes 와 edges 개수가 다름. 모든 단계에 둘 다 적을 것")
+        return errors, warnings
+
+    used = set()
+    for i, (lit_nodes, lit_edges) in enumerate(zip(node_lists, edge_lists), 1):
+        used |= set(lit_nodes) | set(lit_edges)
+        for n in lit_nodes:
+            if n not in nodes:
+                errors.append(f"{i}단계: 노드 {n} 가 SVG에 없음")
+        for e in lit_edges:
+            if e not in edges:
+                errors.append(f"{i}단계: 화살표 {e} 가 SVG에 없음")
+        if not lit_nodes and not lit_edges:
+            continue
+        for e in lit_edges:
+            dim = [end for end in edges.get(e, ()) if end and end in nodes and end not in lit_nodes]
+            if dim:
+                errors.append(f"{i}단계: 화살표 {e} 는 밝은데 끝 노드 {', '.join(dim)} 는 흐림")
+        for n in lit_nodes:
+            parent = nodes.get(n)
+            if parent and parent not in lit_nodes:
+                errors.append(f"{i}단계: 노드 {n} 는 밝은데 부모 {parent} 는 흐림")
+        for parent in {p for p in nodes.values() if p} & set(lit_nodes):
+            children = [c for c, p in nodes.items() if p == parent]
+            if not set(children) & set(lit_nodes):
+                warnings.append(f"{i}단계: {parent} 는 밝은데 안의 노드 {', '.join(children)} 가 모두 흐림")
+    unused = (set(nodes) | set(edges)) - used
+    if unused:
+        warnings.append(f"어느 단계에서도 밝아지지 않는 요소: {', '.join(sorted(unused))}")
+    return errors, warnings
+
+
+def tag_color_pairs(raw: str) -> str:
+    """tag-colors.json({"키워드": "#hex"})을 셸 TAG_COLOR 배열 리터럴로 변환 (키워드는 소문자, 선언 순서 유지)"""
+    colors = json.loads(raw)
+    bad = [k for k, v in colors.items() if not re.match(r"^#(?:[0-9a-fA-F]{3}){1,2}$", str(v))]
+    if bad:
+        sys.exit(f"tag-colors.json 색상값이 hex 형식이 아닙니다: {bad}")
+    return json.dumps([[k.lower(), v] for k, v in colors.items()], ensure_ascii=False)
 
 
 CODE_LINE_LIMIT = {"개념 모드": 10, "구현 모드": 15}
@@ -256,32 +333,11 @@ def step_field(obj: str, name: str) -> str:
     return m.group(1)[1:-1] if m else ""
 
 
-def step_ids(obj: str, name: str) -> list[str]:
-    m = re.search(rf"\b{name}\s*:\s*\[([^\]]*)\]", obj)
-    return re.findall(r"['\"]([^'\"]+)['\"]", m.group(1)) if m else []
-
-
-def edge_endpoints(svg: str) -> tuple[dict, int]:
-    """data-edge 별 (data-from, data-to)와, 양 끝 속성이 없어 점검할 수 없는 화살표 수"""
-    ends, missing = {}, 0
-    for tag in re.findall(r"<g\b[^>]*\bdata-edge=\"[^\"]+\"[^>]*>", svg):
-        e = re.search(r'data-edge="([^"]+)"', tag).group(1)
-        f, t = re.search(r'data-from="([^"]+)"', tag), re.search(r'data-to="([^"]+)"', tag)
-        if f and t:
-            ends[e] = (f.group(1), t.group(1))
-        else:
-            missing += 1
-    return ends, missing
-
-
-def check_steps(steps: str, svg: str, mode: str, topic: str = "") -> list[str]:
-    """단계별 코드 줄 수, 설명문 영문 용어 수, 켜진 화살표의 양 끝 노드 점검 경고"""
+def check_steps(steps: str, mode: str, topic: str = "") -> list[str]:
+    """단계별 코드 줄 수, 설명문 영문 용어 수 점검 경고"""
     warnings = []
     # 주제어 자체와 버전 번호는 독자가 이미 아는 말이라 용어 수에서 제외
     topic_words = set(re.findall(r"[a-z0-9]+", topic.lower()))
-    ends, missing = edge_endpoints(svg)
-    if missing:
-        warnings.append(f"data-from/data-to 없는 화살표 {missing}개, 양 끝 노드 점검 생략")
     objs = split_steps(steps)
     first_phase = step_field(objs[0], "phase") if objs else ""
     if mode == "혼합 모드" and len(objs) > MIXED_STEP_LIMIT:
@@ -302,11 +358,6 @@ def check_steps(steps: str, svg: str, mode: str, topic: str = "") -> list[str]:
         ]
         if len(terms) > TERM_LIMIT:
             warnings.append(f"{n}단계 설명에 영문 용어 {len(terms)}개 ({', '.join(terms)})")
-        nodes = set(step_ids(obj, "nodes"))
-        for e in step_ids(obj, "edges"):
-            for end in ends.get(e, ()):
-                if end not in nodes:
-                    warnings.append(f"{n}단계 화살표 {e}가 켜졌는데 {end} 노드가 꺼져 있음")
     return warnings
 
 
@@ -339,6 +390,7 @@ def main():
     p.add_argument("--steps", help="생성한 STEPS 배열(JS 리터럴) 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
     p.add_argument("--definition", help="한 눈 정의 블록(HTML 조각) 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
     p.add_argument("--links", help="참고 링크 블록(HTML 조각) 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
+    p.add_argument("--tag-colors", help="where 배지 상징색 JSON 파일 경로 (미지정 시 --dir 또는 /tmp/eli5-build/<slug> 탐색)")
     p.add_argument("--topic", required=True)
     p.add_argument("--mode", required=True, choices=["개념 모드", "구현 모드", "혼합 모드"])
     p.add_argument("--accent", default=None, help="악센트 색상 hex (예: #059669). 미지정 시 주제 기반 자동 선택")
@@ -377,6 +429,13 @@ def main():
     elif base_dir and (base_dir / "links.html").is_file():
         links_path = base_dir / "links.html"
 
+    # tag-colors.json 도 선택 사항 — 없으면 where 배지가 모두 강조색으로 나온다.
+    tag_colors_path = None
+    if a.tag_colors:
+        tag_colors_path = pathlib.Path(a.tag_colors)
+    elif base_dir and (base_dir / "tag-colors.json").is_file():
+        tag_colors_path = base_dir / "tag-colors.json"
+
     # 3. 셸 파일 확인
     shell_path = pathlib.Path(a.shell)
     if not shell_path.is_file():
@@ -395,6 +454,7 @@ def main():
     steps = steps_path.read_text(encoding="utf-8").strip().rstrip(";")
     define = definition_path.read_text(encoding="utf-8").strip()
     links = links_path.read_text(encoding="utf-8").strip() if links_path else ""
+    tag_colors = tag_color_pairs(tag_colors_path.read_text(encoding="utf-8")) if tag_colors_path else "[]"
 
     if not steps.startswith("["):
         sys.exit("STEPS 파일은 '[' 로 시작하는 JS 배열 리터럴이어야 합니다.")
@@ -403,10 +463,14 @@ def main():
     # 셸이 width:100%;height:auto 로 크기를 잡으므로 루트 svg 의 고정 크기 속성 제거
     svg_open, gt, svg_rest = svg.partition(">")
     svg_open = re.sub(r'\s+(?:width|height)="[^"]*"', "", svg_open)
-    svg_open = cap_tall_svg(svg_open)
+    font_sizes = [float(v) for v in re.findall(r'font-size="([\d.]+)"', svg_rest)]
+    svg_open = cap_tall_svg(svg_open, min(font_sizes, default=None))
     svg = svg_open + gt + svg_rest
     if "viewBox" not in svg_open:
         print("경고: 루트 <svg> 에 viewBox 가 없어 반응형 크기 조절이 되지 않습니다.")
+    highlight_errors, highlight_warnings = check_highlight(svg, steps)
+    if highlight_errors:
+        sys.exit("다이어그램 하이라이트 오류:\n" + "\n".join(f"  - {e}" for e in highlight_errors))
     if 'class="one"' not in define:
         sys.exit('정의 파일에 <p class="one"> 한 문장 정의가 없습니다.')
     if links and 'class="refs-list"' not in links:
@@ -414,7 +478,9 @@ def main():
 
     accent_color = resolve_accent(a.topic, a.accent)
     category = resolve_category(a.topic)
-    notices = []
+    notices = list(highlight_warnings)
+    if not tag_colors_path:
+        notices.append("tag-colors.json 없음 — where 배지가 모두 강조색으로 나옴. 기술 이름 배지가 있으면 상징색을 조사해 작성")
 
     # 다의어 키워드 경합 (예: '인덱스' → 데이터베이스 vs 경제/금융) 노출
     competing = [d for d, _ in match_all_domains(a.topic) if d != category]
@@ -435,6 +501,7 @@ def main():
         "<!--__DEFINITION__-->",
         "<!--__LINKS__-->",
         "/*__STEPS__*/[]",
+        "/*__TAG_COLOR__*/[]",
         "__TOPIC__",
         "__MODE__",
         "__ACCENT__",
@@ -451,6 +518,7 @@ def main():
         # 검증된 링크가 없으면 참고 링크 섹션을 통째로 제거한다.
         html = re.sub(r'\s*<section class="refs">.*?</section>', "", html, flags=re.DOTALL)
     html = html.replace("/*__STEPS__*/[]", steps)
+    html = html.replace("/*__TAG_COLOR__*/[]", tag_colors)
     html = html.replace("__TOPIC__", a.topic)
     html = html.replace("__MODE__", MODE_BADGE.get(a.mode, a.mode))
     html = html.replace("__ACCENT__", accent_color)
@@ -458,7 +526,7 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html, encoding="utf-8")
     print(f"생성 완료: {out_path}  ({len(html):,} bytes, accent: {accent_color})")
-    for w in check_steps(steps, svg, a.mode, a.topic):
+    for w in check_steps(steps, a.mode, a.topic):
         print(f"경고: {w}")
     for n in notices:
         print(f"주의: {n}")
