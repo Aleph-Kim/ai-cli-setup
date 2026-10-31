@@ -15,8 +15,28 @@ AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 �
 Claude Code와 AGY CLI는 스크립트를 사용하며, Codex CLI는 내장 상태줄을 사용합니다.
 - `statusline/agy-statusline.js` -> `~/.gemini/antigravity-cli/statusline.js`
 - `statusline/claude-statusline.sh` -> `~/.claude/statusline.sh`
-  - 매 턴 RunCat Neo Custom Metrics용 사용량 스냅샷(모델, 컨텍스트, 5시간/주간 사용량)을 `~/.claude/runcat-usage.json`에 함께 기록
+  - 상태표시줄 갱신 시 RunCat Neo용 `~/.claude/runcat-usage.json` 생성
+  - 모델, 컨텍스트 사용률, 5시간 및 7일 사용률과 초기화 시각 기록
 - Codex CLI는 `~/.codex/config.toml`에 모델, 컨텍스트 사용량, 5시간 및 주간 한도를 표시하도록 설정합니다. 기존 `tui.status_line` 설정은 유지하며, 설정에는 Python 3.11 이상이 필요합니다.
+- `statusline/codex-runcat-hook.py`: Codex 턴 종료 시 `~/.codex/runcat-usage.json` 생성
+  - 설치 시 `~/.codex/runcat-hook.py` 연결 및 `~/.codex/hooks.json`에 Stop hook 등록
+  - 기존 Stop hook 보존, 동일 hook 중복 등록 방지
+
+RunCat 연동 설정:
+
+1. Claude용 `jq`, Codex용 Python 3 준비
+2. `./install.sh --statusline-only` 실행
+3. Claude Code와 Codex 재시작 후 각각 대화 한 번 완료
+4. Codex hook 신뢰 요청 시 `/hooks`에서 확인
+5. RunCat Neo 설정의 Metrics, Custom Metrics에서 `~/.claude/runcat-usage.json`과 `~/.codex/runcat-usage.json` 추가
+6. 메뉴 막대 표시 시 Metrics Bar에서 각 소스 활성화
+
+- 기존 Codex hook 파일 교체 거절 시 새 hook 등록 생략
+- Claude JSON: 상태표시줄 갱신 시 제공된 지표 기록
+- Codex JSON: 턴 종료 시 세션 기록 조회, 토큰 또는 한도 데이터 누락 시 기존 JSON 유지
+- 최초 실행 시 데이터 누락에 따른 모델 단독 표시 가능
+- 메뉴 막대: Claude는 5시간 사용률, Codex는 컨텍스트 사용률 표시
+- 카드: 입력 데이터에 포함된 모델, 컨텍스트, 사용 한도 지표 표시
 
 ### 3. Skills (`skills/`)
 - 각 스킬을 `~/.claude/skills`, `~/.gemini/config/skills`, `~/.codex/skills`에 연결합니다. CLI 전용 도구에 의존하는 스킬은 Codex에서 조정이 필요할 수 있습니다.

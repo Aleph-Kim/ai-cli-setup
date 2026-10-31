@@ -224,13 +224,19 @@ fi
 if [ "$INSTALL_STATUSLINE" = true ]; then
   link_group "상태표시줄" \
     "$SCRIPT_DIR/statusline/agy-statusline.js"$'\t'"$HOME/.gemini/antigravity-cli/statusline.js" \
-    "$SCRIPT_DIR/statusline/claude-statusline.sh"$'\t'"$HOME/.claude/statusline.sh"
+    "$SCRIPT_DIR/statusline/claude-statusline.sh"$'\t'"$HOME/.claude/statusline.sh" \
+    "$SCRIPT_DIR/statusline/codex-runcat-hook.py"$'\t'"$HOME/.codex/runcat-hook.py"
 
   echo "==> settings.json에 상태표시줄 설정 등록 중"
   configure_statusline_setting "$HOME/.gemini/antigravity-cli/settings.json" "command" "node $HOME/.gemini/antigravity-cli/statusline.js"
   configure_statusline_setting "$HOME/.claude/settings.json" "command" "bash $HOME/.claude/statusline.sh"
   if command -v python3 >/dev/null 2>&1; then
     python3 "$SCRIPT_DIR/statusline/configure-codex.py" || echo "  Codex 상태줄 설정을 건너뜁니다" >&2
+    if [ "$HOME/.codex/runcat-hook.py" -ef "$SCRIPT_DIR/statusline/codex-runcat-hook.py" ]; then
+      python3 "$SCRIPT_DIR/statusline/configure-codex-runcat.py" "$HOME/.codex/runcat-hook.py" || echo "  Codex RunCat hook 설정을 건너뜁니다" >&2
+    else
+      echo "  RunCat hook 원본이 연결되지 않아 등록을 건너뜁니다" >&2
+    fi
   else
     echo "  경고: python3을 찾을 수 없어 Codex 상태줄 설정을 건너뜁니다" >&2
   fi
