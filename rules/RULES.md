@@ -112,34 +112,39 @@ Before using any `claude-in-chrome` / browser automation tool (navigating, click
 
 ## 9. Task Observer (Continuous Skill Discovery)
 
-(task-observer activation block — template of v3.8.0-local.1)
-Before the first tool call of any session — and before writing or
-proposing a plan, not merely before executing one — invoke the
-task-observer skill AND execute its Session Start Protocol (storage
-check, frontmatter scan, review trigger). Loading the skill and running
-the protocol are separate steps; a session that loads the file and stops
-has activated nothing. Any turn that will involve a tool call counts; do
-not classify the session as "too simple" from its opening message.
-A step you did not run is reported before the answer, in one line — never
-after it, where it reads as a suggestion. If the skill does not resolve on
-this turn, say which probe told you so (the skill listing, or the skill
-directory on disk), re-check the listing on every later turn that makes a
-tool call, and run the protocol the first time it resolves — a "not
-installed" verdict holds for one turn.
+(task-observer activation block — template of v3.8.0-local.2)
+Activate task-observer when there is an improvement signal worth preserving
+for future tasks: repeated mistakes, reusable procedures, skill gaps, or
+conflicts between a skill and the actual environment.
+Activate immediately for explicit requests to run it, record observations,
+or conduct a review; mere mentions and usage questions do not qualify.
+Tool use, planning, and task complexity alone do not trigger activation.
+When uncertain, skip it.
+If a signal emerges mid-task, activate at that point, state the reason in
+one line, and run the Session Start Protocol. Also read the bodies of OPEN
+observations for skills already in use on the current task; retrospective
+logging of the preceding inactive period is not required.
+Remain active through that task's review and feedback. Reassess activation
+for each separate request.
+While inactive, skip all observer duties below: startup scans, observation
+log queries, checkpoint writes, and closing reports. Loading another skill
+alone must not indirectly trigger observer procedures.
+If activation is required but the skill cannot be found, name the listing
+or disk path checked and retry on the next turn of the active task.
 
 Select skills on the DECISION the request is about, not on the artefact it
 arrived as. Name what the user is deciding, then match the installed skill
 descriptions against that — a request handed over as a file to review
 still needs the skill whose description names its subject.
 
-After completing each task, list the observation records written this
+Only while task-observer is active, after completing each task, list the observation records written this
 session in the same turn and report a one-line summary from that listing
 (ids and titles, or "none logged and why") — never from memory of
 writing them. This is the activation backstop: it forces a look at the log,
 so a session that silently skipped the protocol is discovered at the
 first task boundary instead of never.
 
-Loading a skill is not complete until you have queried the observation
+Only while task-observer is active, loading a skill is not complete until you have queried the observation
 log for OPEN observations naming it and read their bodies:
   find "/Users/Aleph/Desktop/my_project/ai-cli-setup/skill-observations/observation-log" -maxdepth 1 \
     -name '*.md' -exec grep -l -E "^(skill|target_file):.*<skill-name>" {} +
@@ -203,7 +208,7 @@ because only it sees the whole task and its review; a subagent that
 notices something worth logging says so in its final report, and the
 controller writes it, running the id snippet per write. A start-up rule
 in a project file reaches every agent the project ever dispatches.
-Before briefing a delegate under an agent definition or instructions
+Only while task-observer is active, before briefing a delegate under an agent definition or instructions
 file, run the lookup for that file's name; its open entries shape the
 brief.
 
