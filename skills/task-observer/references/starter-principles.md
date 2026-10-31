@@ -68,7 +68,7 @@ already on disk:
   are enforced by a script or only stated, which skills delegate to
   subagents;
 - existing enforcement scripts, hooks and CI;
-- handover docs, memory notes, and any `CLAUDE.md`-equivalent, which are
+- handover docs, memory notes, and any `CLAUDE.md / AGENTS.md`-equivalent, which are
   largely a record of corrections nobody logged.
 
 **Offer first, read on yes — the offer stays one line.** On a fresh

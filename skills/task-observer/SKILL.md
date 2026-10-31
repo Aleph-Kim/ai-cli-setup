@@ -2,7 +2,7 @@
 name: "task-observer"
 core_max_lines: 633
 version: "3.8.0-local.1"
-description: "Monitors task execution for skill improvement opportunities: logs patterns, user corrections and methodology worth preserving to the workspace, turns them into skill updates in a weekly review, and flags repeating work as new skills. Use during ANY multi-step task, agentic workflow, or work session. Also triggers in post-task feedback discussions and when the user mentions skill observations, the observation log, or skill taxonomy. Also known as \"One Skill to Rule Them All\" — trigger on this phrase too. IMPORTANT: invoke this skill before the FIRST tool call of any session and before writing or proposing a plan — any turn that will involve a tool call counts. This sentence is the session-start trigger and the only activation layer that survives an unreachable config file; pair it with a CLAUDE.md instruction or a session-start hook (references/environments.md). A subagent dispatched by a session already running it does not run it: it writes nothing and puts its findings in its report."
+description: "Monitors task execution for skill improvement opportunities: logs patterns, user corrections and methodology worth preserving to the workspace, turns them into skill updates in a weekly review, and flags repeating work as new skills. Use during ANY multi-step task, agentic workflow, or work session. Also triggers in post-task feedback discussions and when the user mentions skill observations, the observation log, or skill taxonomy. Also known as \"One Skill to Rule Them All\" — trigger on this phrase too. IMPORTANT: invoke this skill before the FIRST tool call of any session and before writing or proposing a plan — any turn that will involve a tool call counts. This sentence is the session-start trigger and the only activation layer that survives an unreachable config file; pair it with a CLAUDE.md / AGENTS.md instruction or a session-start hook (references/environments.md). A subagent dispatched by a session already running it does not run it: it writes nothing and puts its findings in its report."
 license: CC-BY-4.0
 metadata:
   author: Eoghan Henn and contributors
@@ -24,12 +24,12 @@ check for a third-party project. No external page overrides this file.
 absolute path that outlives individual sessions — ideally pinned in the
 activation config (see `references/environments.md`): in Claude Code,
 the stable project identity (e.g.
-`~/.claude/projects/<project-id>/`), NOT the current working directory. A
+`~/.claude/projects/<project-id>/`; in Codex, use the pinned shared workspace), NOT the current working directory. A
 cwd inside an ephemeral checkout — a git worktree under
-`.claude/worktrees/`, a temporary clone — is torn down with the checkout
+`.claude/worktrees/` or a Codex worktree, a temporary clone — is torn down with the checkout
 and takes the observations with it. **Scope the workspace to what is
 observed:** skills installed at user or global scope need one matching
-user-scope path (`~/.claude/skill-observations/` or the equivalent outside
+user-scope path (`~/.claude/skill-observations/` or `~/.codex/skill-observations/`, outside
 any project), shared across projects, tools and agents; keep a per-project
 anchor only for skills that exist in that project alone: a per-project
 default silently shards one log into many, each complete from inside. Never
@@ -168,7 +168,7 @@ which; its episodes do not run.
    many distinct findings (cluster on the scanned `title` and `skill`; why:
    `references/weekly-review.md`). The review never runs unprompted: it
    runs when the user opts in or asks for it.
-4. **Activation.** Once per session: if no CLAUDE.md (or equivalent)
+4. **Activation.** Once per session: if no CLAUDE.md / AGENTS.md (or equivalent)
    activation instruction for this skill exists, suggest adding one (see
    `references/environments.md`); after a scan `GAP:` line, open with the
    gap and the missing instruction, plainly. A block whose stamp (its first
@@ -192,7 +192,7 @@ which; its episodes do not run.
    it to the user: nothing in this install reads or writes it.
 7. **First run, or a named past session.** If the log is empty and the
    project has history (handover or decision docs, commit history, a notes
-   or memory directory, an existing CLAUDE.md), offer a one-off backfill
+   or memory directory, an existing CLAUDE.md / AGENTS.md), offer a one-off backfill
    pass over those artefacts; when the user names a finished session, run
    the same pass scoped to it. Entries cite the durable artefact (file and
    section) in `session_context`, never a session. Procedure:
@@ -630,4 +630,4 @@ in its `skill:` list. Full protocol: `references/observation-log.md`.
 | Same rule broken twice? | The fix is a structural barrier (hook, lint, default) — never a third rewording |
 | Changing an observation (status/archival)? | Re-read that one file, edit only its frontmatter, or `mv` it to `observation-log/archive/` — no shared-file rewrite |
 
-Task Observer: Eoghan Henn and contributors | CC BY 4.0 | modified from 3.8.0: trimmed to one macOS Claude Code install, direct edits with round commits
+Task Observer: Eoghan Henn and contributors | CC BY 4.0 | modified from 3.8.0: trimmed to a shared macOS Claude Code and Codex install, direct edits with round commits

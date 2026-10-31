@@ -784,7 +784,7 @@ cheap tests decide the verdict:
 The installed names a session can see are the user scope plus the
 project it runs in. A skill scoped to another project, and the generator
 source a project copy is rendered from (a tool-owned directory rendered
-into `.claude/skills/`), are invisible from here, so "no installed skill
+into `.claude/skills/`, `.codex/skills/` or `.agents/skills/`), are invisible from here, so "no installed skill
 covers this" is a blind spot until those scopes have been searched — and
 a narrow scope never invents a skill, it only misses real ones. Before
 writing `proposes_skill:`, a `none` in `siblings_checked:`, or a target as
@@ -800,7 +800,7 @@ result tells you about the instrument before the library.
 ```bash
 root="[PROJECTS ROOT]"   # absolute path of the directory holding the user's repositories
 [ -d "$root" ] || { echo "SWEEP BROKEN — projects root $root does not exist"; exit 1; }
-list=$(for d in "$root"/*/.claude/skills/*/ "$root"/*/*/.claude/skills/*/; do [ -f "$d/SKILL.md" ] && echo "${d%/}"; done)
+list=$(for d in "$root"/*/{.claude,.codex,.agents}/skills/*/ "$root"/*/*/{.claude,.codex,.agents}/skills/*/; do [ -f "$d/SKILL.md" ] && echo "${d%/}"; done)
 n=$(printf '%s\n' "$list" | grep -c .); p=$(for d in "$root"/*/ "$root"/*/*/; do [ -d "$d" ] && echo; done | wc -l | tr -d ' ')
 echo "project skills: $n (in $p directories under $root, two levels deep)"
 printf '%s\n' "$list" | grep "/<skill-name>$"                                            # by name: the bare name, any plugin: prefix dropped
@@ -813,7 +813,7 @@ over a root that holds directories is an answer about this machine only
 if those directories are the repositories you meant; `0 directories` is
 a wrong root. Add the equivalent directory of any other tool the user
 runs skills from (its project-level skills directory, in place of
-`.claude/skills`); the activation block pins the root as
+`.claude/skills`, `.codex/skills` or `.agents/skills`); the activation block pins the root as
 `[PROJECTS ROOT]`, substituted at install like `[ABSOLUTE PATH]`. Run the
 sweep before a `proposes_skill:` write, and name its root and count in
 `siblings_checked:`.

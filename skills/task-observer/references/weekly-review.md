@@ -124,9 +124,9 @@ Escalate one decision per cluster (Step 3).
 half of "is activation in place?" a review can reach: a review only runs
 when the skill loaded, so it cannot detect an install that never
 activated, but it can detect a tier that WAS in place and is no longer
-(a rewritten CLAUDE.md, a hooks file replaced by a settings sync). Read
+(a rewritten CLAUDE.md / AGENTS.md, a hooks file replaced by a settings sync). Read
 the activation config named in `references/environments.md` — the
-instruction block in CLAUDE.md or its equivalent, and the session-start
+instruction block in CLAUDE.md / AGENTS.md or its equivalent, and the session-start
 hook where the harness has one — and if a tier that a previous review
 recorded as present is missing, say so in the summary's first line and
 re-suggest the block; record the tiers found in
@@ -308,7 +308,7 @@ or outstanding principles", update the timestamp, and stop.
 an edit SURVIVES, not by whether it succeeds.** List all skills (system
 prompt `<available_skills>` or the skills directory) and put each into one
 of three categories. Project-level skill directories (a project's
-`.claude/skills/`, where the harness surfaces them) are listed and
+`.claude/skills/`, `.codex/skills/` or `.agents/skills/`, where the harness surfaces them) are listed and
 classified too, and a project skill that duplicates an account skill is
 named as such: two copies of one skill drift exactly like two copies of
 one rule, and an inventory that reads one surface never sees the other.
@@ -453,7 +453,7 @@ entries target the same member. Then, before anything is presented:
 - **Existence check before any new-skill cluster is presented.** A
   `proposes_skill:` or a `siblings_checked: none` is an absence claim
   scoped to the session that wrote it. Search the scopes that session
-  could not see — other projects' `.claude/skills/` and the generator
+  could not see — other projects' `.claude/skills/`, `.codex/skills/` or `.agents/skills/` and the generator
   sources they are rendered from — by the problem terms in the bodies,
   not only the proposed name, and run the presence check above against
   any skill found: an observation proposing a skill that already exists

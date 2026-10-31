@@ -223,7 +223,8 @@ Use the installed-skill location exposed by the current agent when available. Ot
 **Codex:**
 
 1. The skill root exposed by an active marketplace plugin
-2. `~/.agents/skills/<skill-name>/` (user install or editable-clone link)
+2. `~/.codex/skills/<skill-name>/` (this repository's user install), or `~/.agents/skills/<skill-name>/` (user install or editable-clone link)
+3. `.agents/skills/<skill-name>/` or a project skill root exposed by the active Codex runtime
 
 **GitHub Copilot:**
 

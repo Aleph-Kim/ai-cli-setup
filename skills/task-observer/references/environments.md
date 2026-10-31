@@ -9,7 +9,7 @@ Load this for setup questions or compaction/resume behaviour.
 - Recommended activation setup
   - The activation block
   - Anchoring the workspace
-  - A session-start hook (Claude Code and similar harnesses)
+  - A session-start hook (Claude Code, Codex and similar harnesses)
   - A stop hook — the per-task backstop as a harness event
   - A pre-tool hook — the only write path as a barrier
   - A skill-file write gate — the skill-authoring load as a harness event
@@ -19,7 +19,7 @@ Load this for setup questions or compaction/resume behaviour.
   - Install-layout hazards — three ways a skill silently stops existing
   - Other agent tools that read the same skills folder
   - Two harness behaviours that block the protocol rather than break it
-  - If CLAUDE.md (or the equivalent config) is governance-protected
+  - If CLAUDE.md / AGENTS.md (or the equivalent config) is governance-protected
   - A third denial class: an automated content classifier
   - A mode that forbids every write by design
   - A delegated setup step is not done until you have observed it
@@ -30,7 +30,7 @@ Load this for setup questions or compaction/resume behaviour.
 - User-facing documentation
 
 ## Recommended activation setup
-
+Codex: use `~/.codex/AGENTS.md` and the skill root exposed by the runtime (`~/.codex/skills/` in this repository). Claude hook events and JSON schemas below are Claude-specific; in Codex, use only events and schemas verified in the installed runtime, otherwise follow the equivalent protocol directly. Codex sandbox permissions and Plan mode follow the current runtime instructions, not Claude setting keys.
 Four activation tiers exist, and only the strongest is enforced. Pick
 knowingly; do not assume any of the middle ones is a guarantee.
 
@@ -44,7 +44,7 @@ knowingly; do not assume any of the middle ones is a guarantee.
    session-start trigger.
 2. **User-level instructions** (folder-independent, still probabilistic).
    The user-level instruction file every session loads, whichever folder
-   it starts in — in Claude Code, `~/.claude/CLAUDE.md`. This is the
+   it starts in — in Claude Code, `~/.claude/CLAUDE.md`; in Codex, `~/.codex/AGENTS.md`. This is the
    right home for a one-line probe-then-load trigger — "the session's
    first tool call is one batched call that contains an `ls` of the
    workspace path AND the loads of <the session-start skills, by name:
@@ -56,7 +56,7 @@ knowingly; do not assume any of the middle ones is a guarantee.
    started elsewhere to quote it; a line that does not reach the agent is
    not a tier.
 3. **Configuration instruction** (better, still probabilistic). A project
-   CLAUDE.md or project-instruction block, shown below. Empirically
+   CLAUDE.md / AGENTS.md or project-instruction block, shown below. Empirically
    skippable under the same conditions as tier 1, and silently absent
    when the file it lives in is not in context (a session started
    outside the project). An environment flag saying a folder is in place
@@ -292,7 +292,7 @@ again: its open entries are never applied at session start and never
 reach a review. Treat the scratch directory as an ephemeral path
 (SKILL.md, Session Start step 1): anchor on the pinned path if one
 exists, otherwise on the user-scope workspace
-(`~/.claude/skill-observations/`, the path skills installed at user scope
+(`~/.claude/skill-observations/` or `~/.codex/skill-observations/`, the path skills installed at user scope
 need anyway), and name the anchor in the start-up lines. Logs already
 written under scratch-derived identities are shards: consolidate their
 open entries as below.
@@ -398,7 +398,7 @@ The diagnosis at the moment of failure is in `observation-log.md`
 ("Workspace creation").
 
 **Config detection (once per session):** with filesystem access, check the
-workspace root's CLAUDE.md (or equivalent) for a task-observer activation
+workspace root's CLAUDE.md / AGENTS.md (or equivalent) for a task-observer activation
 instruction — suggest adding it if absent. **Suggest; do not create.** If
 no config file exists at all, offer to add one and let the user say yes:
 creating a tracked project file changes every future session's behaviour,
@@ -448,7 +448,7 @@ that a full startup protocol feels disproportionate to it.
 task-observer and related skills independently from configuration; a broken
 chain silences all observation activity.
 
-### A session-start hook (Claude Code and similar harnesses)
+### A session-start hook (Claude Code, Codex and similar harnesses)
 
 Capture is hard-enforced by checkpoints hooked onto tool calls; the review
 trigger in the Session Start Protocol is a soft step — read a file, compare
@@ -816,8 +816,8 @@ line above is worded to match; the activation block's "before the first
 tool call" is satisfied by the load riding *in* that call.
 
 **The pre-skill tier's line names the complete batch, not only the
-probe.** Whatever the harness reads before any skill — a Claude Code user-level
-(global) CLAUDE.md, a session-start hook's injected text — carries the whole first batch: the
+probe.** Whatever the harness reads before any skill — a Claude Code or Codex user-level
+(global) CLAUDE.md / AGENTS.md, a session-start hook's injected text — carries the whole first batch: the
 workspace probe AND the session-start skill loads, named, in one batched
 call; the tier-2 line above is the template. The failure shape: a line naming only the probe
 fires the probe and leaves the loads to a project config that arrives late
@@ -859,7 +859,7 @@ skill directly under the skills directory.
 
 **A backup inside the skills directory registers as a rival skill.** The
 obvious way to back a skill up before overwriting it —
-`cp -r ~/.claude/skills/task-observer ~/.claude/skills/.task-observer-backup`
+`cp -r ~/.claude/skills/task-observer ~/.claude/skills/.task-observer-backup` (Codex: the corresponding `~/.codex/skills/` paths)
 — puts a second copy where the host is looking. The leading dot does not
 exclude it from discovery. The available-skills list then holds two entries
 with near-identical descriptions, and the backup still advertises the OLD
@@ -938,7 +938,7 @@ what else that file was carrying, so the user can verify it survived; and
 where the harness supports it, prefer a separate file over editing a shared
 one.
 
-### If CLAUDE.md (or the equivalent config) is governance-protected
+### If CLAUDE.md / AGENTS.md (or the equivalent config) is governance-protected
 
 Some setups guard shared config files with hooks or file-protection rules
 that deny agent edits. If an edit to the config is denied, never retry the
@@ -989,7 +989,7 @@ An automated content classifier can refuse the edit on the grounds that the
 activation block is **third-party instruction text being written into a
 user-scope config**, where it will steer every future session. Reported in
 the field as `Instruction Poisoning`, on a fresh install into a global
-Claude Code skills directory.
+Claude Code or Codex skills directory.
 
 What follows from that:
 
@@ -1127,7 +1127,7 @@ history and diffs within the session's window, a memory or notes system
 the project already maintains across sessions (a directory of dated
 files indexed apart from the instructions file is common), handover docs
 written at its end. Each is cited in `session_context` exactly as a
-backfilled entry cites CLAUDE.md — the artefact and the section, never a
+backfilled entry cites CLAUDE.md / AGENTS.md — the artefact and the section, never a
 session id, because there is no session to point at. Say which sources
 were read and which were unavailable, so a later reader can tell a thin
 session from a thin record.
@@ -1149,7 +1149,7 @@ them: it holds the per-file line ceilings the validator reads.
 is exactly the condition the Session Start Protocol exists for, and on the
 first turn after any of them the protocol runs again in full — storage
 probe, frontmatter scan, review trigger, and the per-skill grep for every
-skill the task in front of you needs. Where the CLAUDE.md structural
+skill the task in front of you needs. Where the CLAUDE.md / AGENTS.md structural
 trigger reaches the resumed context it re-invokes the skill; do not rely on
 it having done so.
 

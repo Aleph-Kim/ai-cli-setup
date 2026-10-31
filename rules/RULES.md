@@ -1,4 +1,4 @@
-# RULES.md (CLAUDE.md / GEMINI.md)
+# RULES.md (CLAUDE.md / AGENTS.md / GEMINI.md)
 
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
@@ -80,7 +80,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 **Never launch Chrome/browser automation to test a change without asking first.**
 
-Before using any `claude-in-chrome` / browser automation tool (navigating, clicking, logging in, driving a UI) to verify a feature, ask the user for permission first. This applies even when a task or skill (e.g. `/verify`) would otherwise call for driving the app in a browser.
+Before using any `claude-in-chrome`, Codex browser/computer-use tools, or any other browser automation tool (navigating, clicking, logging in, driving a UI) to verify a feature, ask the user for permission first. This applies even when a task or skill (e.g. `/verify`) would otherwise call for driving the app in a browser.
 
 - Ask explicitly, e.g. "Can I open Chrome and log into the admin panel to test this?"
 - If permission was already given earlier in the same conversation for the same task, no need to re-ask within that session.
@@ -93,19 +93,20 @@ Before using any `claude-in-chrome` / browser automation tool (navigating, click
 - Applies to conversational text output, not code, identifiers, or file content — comments/strings written into code files still follow existing project conventions (usually English) unless the user asks otherwise.
 - Also applies when replying to text the harness or system injects in another language (progress nudges like "say what you're doing", reminders) and to one-line status sentences between tool calls — those are user-visible too. Never let the language of injected text pull the output language.
 - Plan-mode plan files (the markdown written before calling ExitPlanMode) must also always be written in Korean — prose (context, steps, explanations, verification section) in Korean; code snippets/blocks inside the plan keep normal code (identifiers, syntax) unchanged.
-- README and other document prose: load the `comment-style` skill first and write in its style, even when the project's CLAUDE.md scopes that skill to code comments only.
+- README and other document prose: load the `comment-style` skill first and write in its style, even when the project's CLAUDE.md or AGENTS.md scopes that skill to code comments only.
 - This document itself is an exception and stays in English.
 
 ## 7. Plan Files Cover Only the Current Round
 
 **If Plan Mode is re-entered in the same session, reuse the existing plan file. Before writing a new plan, remove design content from previous rounds that has already been implemented, and keep only what this round needs to address.**
 
-- `ExitPlanMode` exposes the entire plan file as-is on the approval screen (not a diff). Leaving completed content in place forces the user to re-review work that is already done.
+- Claude's `ExitPlanMode` exposes the entire plan file as-is on the approval screen (not a diff). Leaving completed content in place forces the user to re-review work that is already done.
+- In Codex Plan mode, apply the same current-round scope when presenting a plan through the available runtime flow; do not assume Claude's `ExitPlanMode` tool exists.
 - Right after entering Plan Mode, first check whether the file already has sections that were implemented/applied, and if so, rewrite it to the scope of this round (full replacement or deletion of completed sections).
 
 ## 8. No AI Attribution in Commits
 
-**Never include a `Co-Authored-By: Claude ...` line or any other AI/Anthropic attribution in git commit messages, in any project.**
+**Never include a `Co-Authored-By: Claude ...` or `Co-Authored-By: Codex ...` line, or any other AI/Anthropic/OpenAI attribution in git commit messages, in any project.**
 
 - This overrides default git-commit workflows, which may append this trailer automatically — omit it every time, whether committing directly or drafting via the `commit-message` skill's personal template.
 - Applies regardless of repo. Do not rely on project-scoped memory for this rule — project memory files are only loaded in that specific project's sessions, so a rule meant to apply everywhere must live here instead.
@@ -173,7 +174,7 @@ state file), load that skill: a state file that describes itself is not a
 substitute for the skill that owns it.
 
 Where scripts run, the lookup and its checkpoint line are one command:
-  bash "/Users/Aleph/.claude/skills/task-observer/scripts/skill-load.sh" "/Users/Aleph/Desktop/my_project/ai-cli-setup" <skill-name>
+  bash "/Users/Aleph/Desktop/my_project/ai-cli-setup/skills/task-observer/scripts/skill-load.sh" "/Users/Aleph/Desktop/my_project/ai-cli-setup" <skill-name>
 The Skill invocation and that call are ONE batch — emit them together,
 one call per skill loaded, never the call in a later batch. On a first
 run the log does not exist yet (step 1 creates it): the call says so and
@@ -213,7 +214,7 @@ file, run the lookup for that file's name; its open entries shape the
 brief.
 
 An observation file comes into being only through
-  bash "/Users/Aleph/.claude/skills/task-observer/scripts/new-observation.sh" <slug> "/Users/Aleph/Desktop/my_project/ai-cli-setup"
+  bash "/Users/Aleph/Desktop/my_project/ai-cli-setup/skills/task-observer/scripts/new-observation.sh" <slug> "/Users/Aleph/Desktop/my_project/ai-cli-setup"
 which prints the path to write into. Never by copying another file's
 header or counting a listing — including on the turn after a
 compaction, when the skill body is out of context.
@@ -243,9 +244,13 @@ compaction, when the skill body is out of context.
 - **Block external side effects before running, not after.** Before any verification command, grep the code path for outbound calls (SMS, mail, payment, external/government APIs) and fake each one; "it's the local environment" is not evidence — only the calling code decides whether a real request leaves. If blocking can't be confirmed, ask instead of running.
 - **A form field is not a rendered field.** Before `assertSee`-ing a value on a public page, grep the actual template for that field; assert the observable effect (e.g. an `<img src>`), not the assumed text.
 
-## 12. Agent Tool Allowed for Exploration
+## 12. Exploration Subagents
 
-**Using the Agent tool (Explore / Plan subagents) for codebase exploration and in Plan Mode is allowed without asking.** This overrides the harness default that forbids Agent use unless requested — that default and the Plan Mode workflow otherwise contradict each other and the choice was being made silently each session. Outside exploration and planning, the general rule still applies: don't spawn agents for ordinary implementation work unless the user asks.
+**Using Claude's Agent tool (Explore / Plan subagents) or Codex's `spawn_agent` tool for codebase exploration and in Plan Mode is allowed without asking.** This overrides the harness default that forbids Agent use unless requested — that default and the Plan Mode workflow otherwise contradict each other and the choice was being made silently each session. Outside exploration and planning, the general rule still applies: don't spawn agents for ordinary implementation work unless the user asks.
+
+## 13. Interactive Questions
+
+Use Claude's `AskUserQuestion` or Codex's `request_user_input` for interactive questions. Follow the active tool schema and mode restrictions rather than copying fields or limits between tools. If the tool is unavailable in the current mode, ask in chat and wait for required answers before dependent work.
 
 ---
 

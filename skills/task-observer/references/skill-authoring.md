@@ -517,7 +517,7 @@ record how to obtain it.
 ## Editing skills — always start from the live file
 
 1. The live file is the authoritative source: in Claude Code,
-   `~/.claude/skills/{skill}/SKILL.md`. **Resolve a symlinked entry
+   `~/.claude/skills/{skill}/SKILL.md`; in Codex, the runtime-exposed skill path (`~/.codex/skills/{skill}/SKILL.md` in this repository). **Resolve a symlinked entry
    first** (`cd` into it and `pwd -P`): where it points into the user's
    own repository, the repository file is what you edit and what the
    round commit records (`weekly-review.md`, "Applying changes"). A skill
@@ -573,7 +573,7 @@ record how to obtain it.
    every artefact that paraphrases it, and those live in directories the
    owning skill cannot see, so a grep across the skill folder reports
    clean. The surfaces that matter execute independently of the skill:
-   activation fragments in CLAUDE.md or its equivalent, hook messages,
+   activation fragments in CLAUDE.md / AGENTS.md or its equivalent, hook messages,
    saved shortcuts and memory notes. Enumerate them, then either update
    each in the same round or replace the copy with a stop condition per
    "Configuration vs process" above — including the clause that says the
@@ -742,7 +742,7 @@ When a change is on trial and what's being measured is whether the agent
 does something ORGANICALLY (loads a reference file because the work called
 for it, applies a rule without being told), record the trial's trigger
 condition somewhere the agent under test does not read — a maintainer note
-or the review report, never a task file, CLAUDE.md, or a handoff prompt.
+or the review report, never a task file, CLAUDE.md / AGENTS.md, or a handoff prompt.
 Add an explicit invalidation clause: any session whose priming text names
 the trigger condition, or instructs the behaviour directly, is discarded
 rather than counted either way. And instrument the negative case
@@ -800,7 +800,7 @@ an optional branch.
 
 **Before authoring a skill for a library, tool or project, check whether
 the project already ships one.** Many projects carry their own agent
-skill in-repo — commonly under `agent-skill/`, `.claude/skills/`,
+skill in-repo — commonly under `agent-skill/`, `.claude/skills/`, `.codex/skills/`, `.agents/skills/`,
 `skills/`, or named in the README — and hand-authoring beside it
 duplicates work, drifts from the maintainers' version and misses their
 updates. One search of the upstream repository (those paths, plus "skill"

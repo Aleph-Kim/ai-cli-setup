@@ -54,6 +54,7 @@ Run all checks in this order and report each as `pass`, `warn`, or `fail`.
   their absence is not a warning or failure.
 
 4. Plugin wiring surfaces (maintainer-checkout mode only)
+- For Codex, verify the skill entry and reference routing exposed by its installed plugin or linked skill directory; do not require Claude command files for a Codex-only install.
 - Verify Claude command files exist and point to their references:
   - `commands/export-diagram.md` -> `references/export.md`
   - `commands/import-drawio.md` -> `references/import-drawio.md`

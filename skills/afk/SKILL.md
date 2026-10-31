@@ -19,7 +19,7 @@ The goal is an absence with zero pause points: everything that needs the user is
 
 This skill usually interrupts work already in progress, and the pull to resume that work is strong. The verdict is the only thing that tells the user they can leave, so it must not be lost to that pull:
 
-- **When the AskUserQuestion result arrives** (step 5), the very next output is the verdict text (step 6). No tool call of any kind comes between the answers and the verdict — not a file read, not a measurement, not the next edit of the interrupted task. The only exception is a follow-up AskUserQuestion if an answer opened a new question.
+- **When the AskUserQuestion (Claude) / request_user_input (Codex) result arrives** (step 5), the very next output is the verdict text (step 6). No tool call of any kind comes between the answers and the verdict — not a file read, not a measurement, not the next edit of the interrupted task. The only exception is a follow-up AskUserQuestion (Claude) / request_user_input (Codex) if an answer opened a new question.
 - **When there is nothing to ask**, the verdict comes right after step 4. Skipping the question step never skips the verdict.
 - **Resume the interrupted task only after the verdict text has been written.** Continuing in the same turn after the verdict is fine; continuing instead of it is the failure.
 
@@ -45,7 +45,7 @@ This skill usually interrupts work already in progress, and the pull to resume t
 
    Sum into a range with its basis in one line, e.g. "약 N~M분 (파일 X개 수정, 테스트 실행 K회 × 실측 S초 포함)". If a step depends on something that can't be timed (an external service, a remote build), say so separately instead of folding it into the number.
 
-5. **Ask in one batch.** All Ambiguous items and all pending permission approvals go into one AskUserQuestion call (up to 4 questions per call; chain calls only if more remain). For each, state the current behavior you found and the concrete options — the user should be able to answer without opening any file. If nothing is Ambiguous and no approval is pending, skip this step and go straight to step 6.
+5. **Ask in one batch.** All Ambiguous items and all pending permission approvals go into one AskUserQuestion (Claude) / request_user_input (Codex) call (Claude: up to 4 questions per call; Codex: up to 3; chain calls when needed). For each, state the current behavior you found and the concrete options — the user should be able to answer without opening any file. If nothing is Ambiguous and no approval is pending, skip this step and go straight to step 6.
 
 6. **Write the verdict — immediately, as the reply's first line.** Adjust the step-4 estimate to the chosen options without new tool calls, run the pre-flight check below, then write:
    - **떠나도 될 때** — only when no remaining unattended step can pause on the user: "이제 자리 비우셔도 됩니다. 예상 소요 시간은 약 N~M분입니다." Then list what will proceed unattended (in order, with each item's estimate) and what was moved to after their return.
@@ -62,7 +62,7 @@ Re-read the bucket list and confirm:
 - the reply contains no "I'll ask later / leave a question" and no "N분 뒤 승인이 필요합니다" — either is a pause point, which means the verdict must be "아직 안 됩니다";
 - the reply opens with an explicit go/no-go verdict, not a summary the user has to interpret;
 - the estimate is a range with its basis shown, and every unattended item has its own estimate;
-- no tool call was made after the AskUserQuestion result (other than a follow-up question).
+- no tool call was made after the AskUserQuestion (Claude) / request_user_input (Codex) result (other than a follow-up question).
 
 Write the verdict and lists using only characters typable on a standard keyboard (Hangul, letters, digits, ASCII punctuation): no middle dot (`·`), arrows (`→`, `›`), em dash (`—`), ellipsis character (`…`) or emoji; use commas, colons or separate lines.
 
@@ -70,7 +70,7 @@ If any check fails, fix the reply text; if the failure needs new information, th
 
 ## Common failure patterns
 
-- **Resuming the interrupted task as soon as the answers arrive.** The AskUserQuestion result comes back and the next action is the interrupted task's next edit — the verdict and estimate never appear. Observed repeatedly when `/afk` was called mid-task. The answers are the trigger for the verdict, not for resuming work.
+- **Resuming the interrupted task as soon as the answers arrive.** The AskUserQuestion (Claude) / request_user_input (Codex) result comes back and the next action is the interrupted task's next edit — the verdict and estimate never appear. Observed repeatedly when `/afk` was called mid-task. The answers are the trigger for the verdict, not for resuming work.
 - **Measuring, then drifting back to work.** Running the estimate's measurement commands after the questions (or when there were no questions) and continuing straight into the interrupted task from there. Measurement belongs in step 4, before the questions.
 - **Skipping the verdict because there was nothing to ask.** "새로 여쭤볼 것은 없습니다" followed by a plan summary is not a verdict — the user still doesn't know whether they can leave or for how long.
 - **Promising to leave questions.** "애매하면 질문을 남겨 두겠습니다" — the exact failure this skill exists to prevent.
@@ -79,3 +79,12 @@ If any check fails, fix the reply text; if the failure needs new information, th
 - **Treating a queued mid-turn request as out of scope.** A request the user sent while you were working is remaining work — classify it like the rest.
 - **Deciding an ambiguous item yourself to avoid asking.** Picking an interpretation silently (e.g. quietly dropping part of the requested behavior because it looked infeasible) is worse than asking — the user returns to work they didn't want.
 - **Estimating in human time or from a fixed number.** "2시간 정도" for work the agent finishes in minutes, or reusing one task's per-round time for a different task. Estimate from the item's own work size and measured test runtime.
+
+## 질문 도구별 적용
+
+- Claude: `AskUserQuestion` 사용
+- Codex: `request_user_input` 사용, 현재 런타임의 호출 가능 모드와 스키마 우선
+- Codex에서는 질문당 안정적인 `id` 지정, 호출당 최대 3문항과 문항당 2~3개 선택지 적용
+- `preview`, `multiSelect` 등 Codex 스키마에 없는 필드 생략, 복수 선택은 개별 질문으로 분리
+- Codex에서 도구를 사용할 수 없는 모드는 해당 제한을 알리고 채팅으로 질문, 답변 전 종속 작업 진행 금지
+- Codex의 호출당 문항 제한을 넘는 질문은 출발 판정 전에 모두 나누어 질문, 마지막 답변 직후 판정 출력
