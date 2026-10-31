@@ -64,6 +64,7 @@ backup_root() {
   case "$1" in
     "$HOME/.claude/"*) echo "$HOME/.claude/backup" ;;
     "$HOME/.gemini/"*) echo "$HOME/.gemini/backup" ;;
+    "$HOME/.codex/"*) echo "$HOME/.codex/backup" ;;
     *) echo "$(dirname "$1")/backup" ;;
   esac
 }
@@ -211,11 +212,12 @@ configure_statusline_setting() {
   echo "  statusLine 설정 완료: $target_json"
 }
 
-# 단일 원본 규칙 파일을 각 CLI(Claude, AGY) 기대 경로에 심볼릭 링크
+# 단일 원본 규칙 파일을 각 CLI 기대 경로에 심볼릭 링크
 if [ "$INSTALL_RULES" = true ]; then
   link_group "규칙" \
     "$SCRIPT_DIR/rules/RULES.md"$'\t'"$HOME/.claude/CLAUDE.md" \
-    "$SCRIPT_DIR/rules/RULES.md"$'\t'"$HOME/.gemini/GEMINI.md"
+    "$SCRIPT_DIR/rules/RULES.md"$'\t'"$HOME/.gemini/GEMINI.md" \
+    "$SCRIPT_DIR/rules/RULES.md"$'\t'"$HOME/.codex/AGENTS.md"
 fi
 
 # 상태표시줄 커스텀 스크립트 연결 및 CLI 설정 등록
@@ -227,6 +229,11 @@ if [ "$INSTALL_STATUSLINE" = true ]; then
   echo "==> settings.json에 상태표시줄 설정 등록 중"
   configure_statusline_setting "$HOME/.gemini/antigravity-cli/settings.json" "command" "node $HOME/.gemini/antigravity-cli/statusline.js"
   configure_statusline_setting "$HOME/.claude/settings.json" "command" "bash $HOME/.claude/statusline.sh"
+  if command -v python3 >/dev/null 2>&1; then
+    python3 "$SCRIPT_DIR/statusline/configure-codex.py" || echo "  Codex 상태줄 설정을 건너뜁니다" >&2
+  else
+    echo "  경고: python3을 찾을 수 없어 Codex 상태줄 설정을 건너뜁니다" >&2
+  fi
 fi
 
 # 각 CLI의 전역 스킬 디렉토리로 개별 스킬 폴더 심볼릭 링크
@@ -234,6 +241,7 @@ if [ "$INSTALL_SKILLS" = true ]; then
   TARGET_SKILL_DIRS=(
     "$HOME/.claude/skills"
     "$HOME/.gemini/config/skills"
+    "$HOME/.codex/skills"
   )
 
   # 레포에서 삭제된 스킬의 링크만 정리 (레포 밖을 가리키는 링크는 유지)

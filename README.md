@@ -1,22 +1,25 @@
 # ai-cli-setup
 
-개인 AI 코딩 환경(Claude Code, AGY CLI)의 전역 규칙(Rules), 상태표시줄(Statusline), 스킬(Skills)을 통합 보관하고 새 환경에 안전하게 배포하기 위한 저장소입니다.
+개인 AI 코딩 환경(Claude Code, AGY CLI, Codex)의 전역 규칙(Rules), 상태표시줄(Statusline), 스킬(Skills)을 통합 보관하고 새 환경에 안전하게 배포하기 위한 저장소입니다.
 
 ## 구성
 
 ### 1. Rules (`rules/`)
 AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 관리합니다.
 - 원본: `rules/RULES.md`
-- 배포: `~/.claude/CLAUDE.md` 및 `~/.gemini/GEMINI.md`로 심볼릭 링크 연결
+- 배포: `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, `~/.codex/AGENTS.md`로 심볼릭 링크 연결
 - Think Before Coding, Simplicity First, Surgical Changes, 한국어 응답 원칙 등 포함
 
 ### 2. Statusline (`statusline/`)
 터미널 하단에 모델명, Quota(5시간/주간 사용량 및 리셋 시각) 등을 표시하는 커스텀 상태표시줄 스크립트입니다.
+Claude Code와 AGY CLI는 스크립트를 사용하며, Codex CLI는 내장 상태줄을 사용합니다.
 - `statusline/agy-statusline.js` -> `~/.gemini/antigravity-cli/statusline.js`
 - `statusline/claude-statusline.sh` -> `~/.claude/statusline.sh`
   - 매 턴 RunCat Neo Custom Metrics용 사용량 스냅샷(모델, 컨텍스트, 5시간/주간 사용량)을 `~/.claude/runcat-usage.json`에 함께 기록
+- Codex CLI는 `~/.codex/config.toml`에 모델, 컨텍스트 사용량, 5시간 및 주간 한도를 표시하도록 설정합니다. 기존 `tui.status_line` 설정은 유지하며, 설정에는 Python 3.11 이상이 필요합니다.
 
 ### 3. Skills (`skills/`)
+- 각 스킬을 `~/.claude/skills`, `~/.gemini/config/skills`, `~/.codex/skills`에 연결합니다. CLI 전용 도구에 의존하는 스킬은 Codex에서 조정이 필요할 수 있습니다.
 - `comment-style` — 코드 주석을 개인 고유 스타일(한글, WHY 중심)로 작성
 - `commit-message` — 커밋 메시지를 개인 고유 템플릿(`type: 한글 제목`)으로 초안 작성
 - `quiz` — 작업 내용 이해도 확인용 4지선다 퀴즈 생성
@@ -49,7 +52,7 @@ cd ai-cli-setup
 `./install.sh` 실행 시 이미 대상 경로에 일반 파일이나 다른 설정이 존재하면:
 1. 기존 파일 개수와 경로(`기존 파일 N개:`)를 출력합니다.
 2. `기존 파일을 백업하고 덮어쓰시겠습니까? [y/n]` 확인을 거칩니다.
-3. `y` 입력 시 기존 파일은 CLI 홈의 `backup/` 폴더(`~/.claude/backup/` 또는 `~/.gemini/backup/`에 `{file}.bak_YYYYMMDDHHMMSS`)로 백업된 뒤 심볼릭 링크로 교체됩니다. (`n` 입력 시 기존 설정 유지)
+3. `y` 입력 시 기존 파일은 해당 CLI 홈의 `backup/` 폴더에 `{file}.bak_YYYYMMDDHHMMSS` 형식으로 백업된 뒤 심볼릭 링크로 교체됩니다. (`n` 입력 시 기존 설정 유지)
 4. 이미 이 저장소의 원본을 가리키는 링크는 `이미 연결됨`으로 통과합니다.
 
 스킬 설치 시에는 이 저장소에서 삭제된 스킬을 가리키는 끊어진 링크를 자동으로 제거합니다(`삭제된 스킬 링크 제거: ...`). 저장소 밖을 가리키는 링크는 건드리지 않습니다.
