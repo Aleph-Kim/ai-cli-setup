@@ -22,7 +22,6 @@ show_help() {
 EOF
 }
 
-# CLI 옵션 파싱
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -y|--yes)
@@ -59,8 +58,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# 백업은 각 CLI 홈 바로 아래로 모은다 (skills 하위에 남으면 스킬로 오인식됨)
 backup_root() {
+  # skills 하위 백업의 스킬 오인식 방지를 위한 CLI 홈별 백업 분리
   case "$1" in
     "$HOME/.claude/"*) echo "$HOME/.claude/backup" ;;
     "$HOME/.gemini/"*) echo "$HOME/.gemini/backup" ;;
@@ -69,7 +68,6 @@ backup_root() {
   esac
 }
 
-# 이미 동일 원본을 가리키는 링크면 백업 대상에서 제외
 needs_backup() {
   local src="$1"
   local dest="$2"
@@ -134,7 +132,6 @@ safe_link() {
   echo "  연결 완료: $dest -> $src"
 }
 
-# 카테고리 단위로 덮어쓰기 여부를 한 번만 확인 (인자: 라벨, "원본<TAB>대상" 목록)
 link_group() {
   local label="$1"
   shift
@@ -150,6 +147,7 @@ link_group() {
     fi
   done
 
+  # 반복 승인 방지를 위한 카테고리별 덮어쓰기 일괄 확인
   local overwrite=true
   if [ "${#conflicts[@]}" -gt 0 ]; then
     echo "  기존 파일 ${#conflicts[@]}개:"
@@ -165,7 +163,6 @@ link_group() {
   done
 }
 
-# settings.json에 statusLine 설정을 병합 (기존 키 보존)
 configure_statusline_setting() {
   local target_json="$1"
   local cmd_type="$2"
@@ -212,7 +209,6 @@ configure_statusline_setting() {
   echo "  statusLine 설정 완료: $target_json"
 }
 
-# 단일 원본 규칙 파일을 각 CLI 기대 경로에 심볼릭 링크
 if [ "$INSTALL_RULES" = true ]; then
   link_group "규칙" \
     "$SCRIPT_DIR/rules/RULES.md"$'\t'"$HOME/.claude/CLAUDE.md" \
@@ -220,7 +216,6 @@ if [ "$INSTALL_RULES" = true ]; then
     "$SCRIPT_DIR/rules/RULES.md"$'\t'"$HOME/.codex/AGENTS.md"
 fi
 
-# 상태표시줄 커스텀 스크립트 연결 및 CLI 설정 등록
 if [ "$INSTALL_STATUSLINE" = true ]; then
   link_group "상태표시줄" \
     "$SCRIPT_DIR/statusline/agy-statusline.js"$'\t'"$HOME/.gemini/antigravity-cli/statusline.js" \
@@ -242,7 +237,6 @@ if [ "$INSTALL_STATUSLINE" = true ]; then
   fi
 fi
 
-# 각 CLI의 전역 스킬 디렉토리로 개별 스킬 폴더 심볼릭 링크
 if [ "$INSTALL_SKILLS" = true ]; then
   TARGET_SKILL_DIRS=(
     "$HOME/.claude/skills"
@@ -250,7 +244,7 @@ if [ "$INSTALL_SKILLS" = true ]; then
     "$HOME/.codex/skills"
   )
 
-  # 레포에서 삭제된 스킬의 링크만 정리 (레포 밖을 가리키는 링크는 유지)
+  # 외부 스킬 보존을 위한 저장소 소유 끊어진 링크만 제거
   for target_dir in "${TARGET_SKILL_DIRS[@]}"; do
     for link in "$target_dir"/*; do
       [ -L "$link" ] && [ ! -e "$link" ] && [ "$(dirname "$(readlink "$link")")" -ef "$SCRIPT_DIR/skills" ] || continue

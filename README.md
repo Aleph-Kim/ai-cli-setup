@@ -1,20 +1,22 @@
 # ai-cli-setup
 
-개인 AI 코딩 환경(Claude Code, AGY CLI, Codex)의 전역 규칙(Rules), 상태표시줄(Statusline), 스킬(Skills)을 통합 보관하고 새 환경에 안전하게 배포하기 위한 저장소입니다.
+개인 AI 코딩 환경(Claude Code, AGY CLI, Codex)의 전역 규칙, 상태표시줄, 스킬 통합 보관 및 새 환경 배포용 저장소
 
 ## 구성
 
 ### 1. Rules (`rules/`)
-AI 에이전트의 공통 행동 지침 및 원칙을 단일 원본 파일로 관리합니다.
+AI 에이전트의 공통 행동 지침과 원칙을 단일 원본 파일로 관리
+
 - 원본: `rules/RULES.md`
 - 배포: `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, `~/.codex/AGENTS.md`로 심볼릭 링크 연결
 - Think Before Coding, Simplicity First, Surgical Changes, 한국어 응답 원칙 등 포함
 
 ### 2. Statusline (`statusline/`)
-터미널 하단에 모델명, Quota(5시간/주간 사용량 및 리셋 시각) 등을 표시하는 커스텀 상태표시줄 스크립트입니다.
-Claude Code와 AGY CLI는 스크립트를 사용하며, Codex CLI는 내장 상태줄을 사용합니다.
-- `statusline/agy-statusline.js` -> `~/.gemini/antigravity-cli/statusline.js`
-- `statusline/claude-statusline.sh` -> `~/.claude/statusline.sh`
+터미널 하단의 모델명, 5시간 및 주간 사용량, 초기화 시각 표시
+Claude Code와 AGY CLI는 커스텀 스크립트 사용, Codex CLI는 내장 상태줄 사용
+
+- AGY 원본: `statusline/agy-statusline.js`, 설치 경로: `~/.gemini/antigravity-cli/statusline.js`
+- Claude 원본: `statusline/claude-statusline.sh`, 설치 경로: `~/.claude/statusline.sh`
   - 상태표시줄 갱신 시 RunCat Neo용 `~/.claude/runcat-usage.json` 생성
   - 모델, 컨텍스트 사용률, 5시간 및 7일 사용률과 초기화 시각 기록
 - Codex CLI: 내장 상태줄에 모델과 추론 수준, 컨텍스트 사용량, 5시간 및 주간 한도, 권한 프로필(`permissions`), 승인 모드(`approval-mode`) 표시
@@ -41,24 +43,25 @@ RunCat 연동 설정:
 - 카드: 입력 데이터에 포함된 모델, 컨텍스트, 사용 한도 지표 표시
 
 ### 3. Skills (`skills/`)
-- 각 스킬을 `~/.claude/skills`, `~/.gemini/config/skills`, `~/.codex/skills`에 연결합니다. CLI 전용 도구에 의존하는 스킬은 Codex에서 조정이 필요할 수 있습니다.
-- `comment-style` — 코드 주석을 개인 고유 스타일(한글, WHY 중심)로 작성
-- `commit-message` — 커밋 메시지를 개인 고유 템플릿(`type: 한글 제목`)으로 초안 작성
-- `quiz` — 작업 내용 이해도 확인용 4지선다 퀴즈 생성
-- `eli5` — 주제를 "단계별 재생기" 형식의 인터랙티브 아티팩트로 시각화 (개념/구현 모드, 에디토리얼 SVG 다이어그램 연계)
-- `diagram-design` — 39가지 시각 유형(아키텍처, 플로우차트, 시퀀스, ERD 등)의 에디토리얼 SVG 다이어그램 생성 (명시적 호출 시 작동, eli5의 다이어그램 레퍼런스로 활용)
-- `docs-upload` — eli5 결과물 또는 HTML 시각화 문서를 docs 아카이브 서버에 업로드/등록
-- `task-observer` — 세션 중 작업을 관찰해 스킬 개선/신규 스킬 후보를 기록하는 메타 스킬
-- `project-prompt` — 프로젝트 주제 기반 기본 세팅 프롬프트 생성
-- `project-feedback` — 완료된 프로젝트 코드베이스를 정석 기준으로 진단해 부족한 점만 등급별로 지적하는 비판 리포트 작성
-- `taste-skill` — 랜딩/마케팅 페이지의 디자인 방향 결정 및 AI 특유의 템플릿 티(AI Slop) 차단
-- `web-design-guidelines` — 인터랙션·폼·접근성·성능 등 프로덕션 수준 프론트엔드 품질 체크리스트 강제
-- `hyperui` — HyperUI(hyperui.dev) 스타일의 순수 HTML5 + Tailwind CSS 전용 컴포넌트 마크업 가이드 (React/JSX 배제, 시맨틱 HTML 우선)
-- `ponytail` — 가장 게으르고 단순한 시니어 개발자 원칙(YAGNI, 표준 라이브러리 및 네이티브 우선, 최소 코드) 강제 (`ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`)
-- `afk` — 자리를 비우기 전 `/afk`로 호출하면 남은 작업을 코드로 확인해 모호한 점을 한 번에 질문하고, 부재 중 진행할 것과 복귀 후 확인할 것을 정리
-- `i-have-adhd` — ADHD 친화적 출력 스타일 적용 (다음 행동/코드 우선 제시, 작업 단계 번호화, 진행 상태 복기, 서론·결론 인사 생략)
-- `grilling` — 계획, 결정, 아이디어를 설계 트리로 나눠 공통된 이해에 도달할 때까지 라운드 단위로 집요하게 질문
-- `mistake-response` — 실수를 지적받았을 때 `/mistake-response`로 호출하면 수정본만 내놓지 않고 실제 원인 설명과 재발 방지책을 먼저 제시해 검토받음
+- 각 스킬을 `~/.claude/skills`, `~/.gemini/config/skills`, `~/.codex/skills`에 연결
+- CLI 전용 도구에 의존하는 스킬의 Codex 호환을 위한 추가 조정 가능성
+- `comment-style`: 코드 주석을 개인 고유 스타일(한글, WHY 중심)로 작성
+- `commit-message`: 커밋 메시지를 개인 고유 템플릿(`type: 한글 제목`)으로 초안 작성
+- `quiz`: 작업 내용 이해도 확인용 4지선다 퀴즈 생성
+- `eli5`: 주제를 "단계별 재생기" 형식의 인터랙티브 아티팩트로 시각화 (개념/구현 모드, 에디토리얼 SVG 다이어그램 연계)
+- `diagram-design`: 39가지 시각 유형(아키텍처, 플로우차트, 시퀀스, ERD 등)의 에디토리얼 SVG 다이어그램 생성 (명시적 호출 시 작동, eli5의 다이어그램 레퍼런스로 활용)
+- `docs-upload`: eli5 결과물 또는 HTML 시각화 문서를 docs 아카이브 서버에 업로드/등록
+- `task-observer`: 세션 중 작업을 관찰해 스킬 개선/신규 스킬 후보를 기록하는 메타 스킬
+- `project-prompt`: 프로젝트 주제 기반 기본 세팅 프롬프트 생성
+- `project-feedback`: 완료된 프로젝트 코드베이스를 정석 기준으로 진단해 부족한 점만 등급별로 지적하는 비판 리포트 작성
+- `taste-skill`: 랜딩/마케팅 페이지의 디자인 방향 결정 및 AI 특유의 템플릿 티(AI Slop) 차단
+- `web-design-guidelines`: 인터랙션, 폼, 접근성, 성능 등 프로덕션 수준 프론트엔드 품질 체크리스트 강제
+- `hyperui`: HyperUI(hyperui.dev) 스타일의 순수 HTML5 + Tailwind CSS 전용 컴포넌트 마크업 가이드 (React/JSX 배제, 시맨틱 HTML 우선)
+- `ponytail`: 가장 게으르고 단순한 시니어 개발자 원칙(YAGNI, 표준 라이브러리 및 네이티브 우선, 최소 코드) 강제 (`ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`)
+- `afk`: 자리를 비우기 전 `/afk`로 호출하면 남은 작업을 코드로 확인해 모호한 점을 한 번에 질문하고, 부재 중 진행할 것과 복귀 후 확인할 것을 정리
+- `i-have-adhd`: ADHD 친화적 출력 스타일 적용 (다음 행동/코드 우선 제시, 작업 단계 번호화, 진행 상태 복기, 서론, 결론 인사 생략)
+- `grilling`: 계획, 결정, 아이디어를 설계 트리로 나눠 공통된 이해에 도달할 때까지 라운드 단위로 집요하게 질문
+- `mistake-response`: 실수를 지적받았을 때 `/mistake-response`로 호출하면 수정본만 내놓지 않고 실제 원인 설명과 재발 방지책을 먼저 제시해 검토받음
 
 ---
 
@@ -71,13 +74,14 @@ cd ai-cli-setup
 ```
 
 ### 안전 장치 (백업 및 확인)
-`./install.sh` 실행 시 이미 대상 경로에 일반 파일이나 다른 설정이 존재하면:
-1. 기존 파일 개수와 경로(`기존 파일 N개:`)를 출력합니다.
-2. `기존 파일을 백업하고 덮어쓰시겠습니까? [y/n]` 확인을 거칩니다.
-3. `y` 입력 시 기존 파일은 해당 CLI 홈의 `backup/` 폴더에 `{file}.bak_YYYYMMDDHHMMSS` 형식으로 백업된 뒤 심볼릭 링크로 교체됩니다. (`n` 입력 시 기존 설정 유지)
-4. 이미 이 저장소의 원본을 가리키는 링크는 `이미 연결됨`으로 통과합니다.
+`./install.sh` 실행 시 기존 일반 파일 또는 다른 설정에 대한 확인 절차:
 
-스킬 설치 시에는 이 저장소에서 삭제된 스킬을 가리키는 끊어진 링크를 자동으로 제거합니다(`삭제된 스킬 링크 제거: ...`). 저장소 밖을 가리키는 링크는 건드리지 않습니다.
+1. 기존 파일 개수와 경로(`기존 파일 N개:`) 출력
+2. `기존 파일을 백업하고 덮어쓰시겠습니까? [y/n]` 확인
+3. `y` 입력 시 해당 CLI 홈의 `backup/`에 `{file}.bak_YYYYMMDDHHMMSS` 형식으로 백업 후 심볼릭 링크로 교체, `n` 입력 시 기존 설정 유지
+4. 동일 원본을 가리키는 기존 링크의 `이미 연결됨` 처리
+
+스킬 설치 시 저장소에서 삭제된 스킬의 끊어진 링크 자동 제거, 저장소 외부 링크 보존 (`삭제된 스킬 링크 제거: ...`)
 
 ### 옵션 플래그
 
