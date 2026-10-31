@@ -1,4 +1,5 @@
 import re
+import json
 import os
 import stat
 import sys
@@ -21,14 +22,28 @@ except tomllib.TOMLDecodeError:
 tui = config.get("tui", {})
 if not isinstance(tui, dict):
     sys.exit("  경고: 기존 tui 설정을 확인해야 합니다")
-if "status_line" in tui:
+items = tui.get("status_line", ["model-with-reasoning", "context-used", "five-hour-limit", "weekly-limit"])
+if items is None:
     print(f"  기존 상태줄 설정 유지: {path}")
     sys.exit(0)
+if not isinstance(items, list) or not all(isinstance(item, str) for item in items):
+    sys.exit("  경고: 기존 status_line 설정을 확인해야 합니다")
+updated_items = [item for item in items if item != "access"]
+for item in ("permissions", "approval-mode"):
+    if item not in updated_items:
+        updated_items.append(item)
+if updated_items == items:
+    print(f"  기존 상태줄 설정 유지: {path}")
+    sys.exit(0)
+items = updated_items
 
-setting = 'status_line = ["model-with-reasoning", "context-used", "five-hour-limit", "weekly-limit"]\n'
+setting = "status_line = " + json.dumps(items) + "\n"
 expected = dict(config)
-expected["tui"] = {**tui, "status_line": ["model-with-reasoning", "context-used", "five-hour-limit", "weekly-limit"]}
+expected["tui"] = {**tui, "status_line": items}
 candidates = []
+if "status_line" in tui:
+    for match in re.finditer(r"(?ms)^[ \t]*status_line[ \t]*=[ \t]*\[.*?\]", content):
+        candidates.append(content[:match.start()] + setting.rstrip("\n") + content[match.end():])
 for header in re.finditer(r"(?m)^[ \t]*\[tui\][ \t]*(?:#.*)?$", content):
     position = header.end()
     candidates.append(content[:position] + "\n" + setting + content[position:].lstrip("\n"))

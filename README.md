@@ -17,7 +17,9 @@ Claude Code와 AGY CLI는 스크립트를 사용하며, Codex CLI는 내장 상�
 - `statusline/claude-statusline.sh` -> `~/.claude/statusline.sh`
   - 상태표시줄 갱신 시 RunCat Neo용 `~/.claude/runcat-usage.json` 생성
   - 모델, 컨텍스트 사용률, 5시간 및 7일 사용률과 초기화 시각 기록
-- Codex CLI는 `~/.codex/config.toml`에 모델, 컨텍스트 사용량, 5시간 및 주간 한도를 표시하도록 설정합니다. 기존 `tui.status_line` 설정은 유지하며, 설정에는 Python 3.11 이상이 필요합니다.
+- Codex CLI: 내장 상태줄에 모델과 추론 수준, 컨텍스트 사용량, 5시간 및 주간 한도, 권한 프로필(`permissions`), 승인 모드(`approval-mode`) 표시
+  - 기존 `tui.status_line` 항목과 순서 보존 후 권한 및 승인 모드 추가, 잘못 등록한 `access` 제거, 비활성화 설정 유지
+  - 설치 설정에 Python 3.11 이상 필요, 좌우 영역 분리 정렬 옵션 미지원
 - `statusline/codex-runcat-hook.py`: Codex 턴 종료 시 `~/.codex/runcat-usage.json` 생성
   - 설치 시 `~/.codex/runcat-hook.py` 연결 및 `~/.codex/hooks.json`에 Stop hook 등록
   - 기존 Stop hook 보존, 동일 hook 중복 등록 방지
