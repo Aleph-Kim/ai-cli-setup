@@ -48,6 +48,7 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
         */
        public function createMelonDeepLink(...)
        ```
+     - 한 구절이나 괄호 목록은 길어도 한 줄로 유지하고, doc block 줄바꿈은 서로 다른 내용(추가 제약, 예외)을 구분할 때만 사용
      - `@param`, `@return` 등의 태그는 기본적으로 생략(순수 한국어 산문 우선)하되, **파라미터명이나 반환 구조만으로 직관적인 이해가 어려울 경우**에는 필요한 태그를 선별적으로 추가:
        ```php
        /**
