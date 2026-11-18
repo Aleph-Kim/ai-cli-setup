@@ -23,6 +23,16 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
        // 틀림: 이미 locale 접두사가 붙었는데 매칭 실패 = 진짜 404
        // 맞음: locale 접두사가 있는 경로의 404 처리 (접두사 누락으로 인한 실패와 구분)
        ```
+     - No backticks in comment text, including doc blocks a generator renders (Scramble): write identifiers, field names, values and formats bare.
+       ```php
+       // 틀림: `remove_attachment`를 1로 보내면 첨부파일 삭제
+       // 맞음: remove_attachment 1 전송 시 첨부파일 삭제
+       ```
+     - No filler that adds no meaning: drop a particle or word when the comment says the same without it (만, 모두, 자체, 즉시, 시점, "~에 따른", "~을 통한"). Keep 만 only when it excludes something real (랜덤 게임만 = number-pick games excluded).
+       ```php
+       // 틀림: 판매완료는 종료일 경과와 전량 판매로만 판정
+       // 맞음: 판매완료는 종료일 경과와 전량 판매로 판정
+       ```
      - The final word must be an actual nominalized noun (조회/저장/방지 류), not a bare literal value (a number, an id, a status code) tacked on as the last token — ending on "404" isn't a noun-phrase ending just because it isn't a verb.
      - Prefer one compressed noun-phrase chain over a reasoned sentence built from connective endings (`-이므로`, `-면`, `-는데도`, i.e. "since X, if Y then Z") — even when the very last word is a genuine noun, a comment shaped like a small paragraph of reasoning still reads wrong; compress it to a label like the examples in this rule.
        ```php
@@ -48,6 +58,7 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
         */
        public function createMelonDeepLink(...)
        ```
+     - 메서드 doc block 첫 줄은 그 메서드의 역할(어떤 기능이 언제, 무엇을 위해 부르는지)로 시작. 내부 처리 단계나 생성되는 행의 나열만 있으면 WHAT 주석으로 판정하고, 내부 규칙은 해당 코드 바로 위 `//`로 이동
      - 한 구절이나 괄호 목록은 길어도 한 줄로 유지하고, doc block 줄바꿈은 서로 다른 내용(추가 제약, 예외)을 구분할 때만 사용
      - `@param`, `@return` 등의 태그는 기본적으로 생략(순수 한국어 산문 우선)하되, **파라미터명이나 반환 구조만으로 직관적인 이해가 어려울 경우**에는 필요한 태그를 선별적으로 추가:
        ```php
