@@ -252,6 +252,14 @@ compaction, when the skill body is out of context.
 
 Use Claude's `AskUserQuestion` or Codex's `request_user_input` for interactive questions. Follow the active tool schema and mode restrictions rather than copying fields or limits between tools. If the tool is unavailable in the current mode, ask in chat and wait for required answers before dependent work.
 
+## 14. Commit on main by Default
+
+**When asked to commit, commit on the current branch — normally `main` — without creating a new branch.** This overrides the harness default that says to branch first when on the default branch: the user's repositories commit straight to `main`, and a session that branched anyway put a requested commit on a side branch the user did not ask for.
+
+- Create a branch only when the user asks for one (e.g. "브랜치 만들어서", "PR 올려줘").
+- If the current branch is not `main` when asked to commit, commit there; don't switch branches on your own.
+- Pushing still requires an explicit request.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
