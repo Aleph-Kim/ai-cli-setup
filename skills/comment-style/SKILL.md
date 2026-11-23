@@ -36,7 +36,7 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
      - Prefer one compressed noun-phrase chain over a reasoned sentence built from connective endings (`-이므로`, `-면`, `-는데도`, i.e. "since X, if Y then Z") — even when the very last word is a genuine noun, a comment shaped like a small paragraph of reasoning still reads wrong; compress it to a label like the examples in this rule.
        ```php
        // 틀림: 컨트롤러 인자는 위치 기반 바인딩이므로, locale을 남겨두면 뒤따르는 파라미터가 밀리는 문제 방지
-       // 맞음: 컨트롤러 인자 위치 바인딩 특성으로 인한 뒤 파라미터(boardSlug 등) 밀림 방지
+       // 맞음: locale 제거 (남기면 뒤 파라미터가 한 칸씩 밀림)
        ```
    - **(a) Single-line `//` — method body and statement blocks.** Used for statements, logic branches, and blocks inside a method or function body.
      ```php
@@ -98,6 +98,8 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
        ```
 
 4. **Content bias: explain WHY, not WHAT.** WHY means why this code exists, its purpose, not the background story behind that purpose. Never restate how the code works line by line. A comment earns its place only when it captures intent, a business rule, or a constraint the reader can't get from reading the code itself. If the code is self-evident, don't comment it.
+   - The default comment is a plain-words statement of what the code does or is for, readable by someone who has not seen the code (e.g. "상품별 보상 개수 조회"). Write that one line first; usually it is the whole comment.
+   - Implementation circumstances are not a purpose: performance, data-scale numbers (row counts, DAU), indexes, lock mechanics. Do not write them into the comment.
    - Add a background reason only when the code and its purpose still don't explain themselves, and only one confirmed by the user's request, the spec, or the code. Never guess a reason
      ```php
      // 틀림: 목적 대신 추측한 배경 사정을 붙임
@@ -128,6 +130,7 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
 6. **No banners, no markers, no boilerplate.** No `====`/`----`/`#region` section dividers, no `TODO`/`FIXME` tags, no file- or class-level doc comments. For `@param`/`@return`, use only when non-obvious parameter or return shape clarification is genuinely needed per rule 3b. Just the comment types in rule 3.
 
 7. **Keep existing comments truthful.** When editing code, check nearby existing comments. If your change falsifies or alters what an existing comment asserts, update or remove that comment in the same edit — never leave a stale, misleading comment behind. When you touch an existing comment for any reason, re-apply every rule to it (shape, placement, sparseness), not only its content. If the comment breaks a placement or necessity rule (e.g. a class-level comment under rule 6), delete it instead of rewriting or relocating it.
+   - When the user says a comment is hard to understand, do not add more technical background. Rewrite it in plain words that say what the code does.
 
 ## When applying this in a non-PHP codebase
 
@@ -137,6 +140,6 @@ Keep the same shapes and the same judgment (noun-phrase ending, WHY/caller-conte
 
 1. If the request is to comment test files, first confirm whether the user means the per-test descriptions shown in the runner output (PHPUnit `#[TestDox]`, Jest/Pest `it('...')`, pytest docstrings) rather than inline comments. Propose those first when test names are English. PHPUnit 12+ honors only the `#[TestDox]` attribute, not the `@testdox` annotation.
 2. Read the surrounding code to find genuine WHY-worthy spots — non-obvious constraints, business rules, external-system limitations, short workarounds, or a reusable model/query-builder method whose callers are worth noting. Skip self-evident code entirely.
-3. Before checking any shape rule, write one phrase per comment (new, edited, or under review) stating what the reader loses if it is deleted. If there is nothing to write, or the phrase only restates the code below or another comment, delete the comment. Apply shape rules only to the comments that survive. When reviewing, report this phrase per comment; a review that only checks shape is incomplete.
+3. Before checking any shape rule, write one phrase per comment (new, edited, or under review) stating what the reader loses if it is deleted. If there is nothing to write, or the phrase only restates the code below or another comment, delete the comment. Apply shape rules only to the comments that survive. When reviewing, report this phrase per comment; a review that only checks shape is incomplete. When delegating a comment review to another agent, require this phrase for every comment too; never instruct it to report only violations.
 4. For each spot, pick shape (a)–(d) per rule 3, and write the comment in Korean following the tone in the examples above.
 5. Don't add comments beyond what's asked — if the user asked to comment one function, don't sweep the whole file.
