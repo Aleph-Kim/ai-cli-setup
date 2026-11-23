@@ -97,7 +97,18 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
        'scores' => $this->scores,
        ```
 
-4. **Content bias: explain WHY, not WHAT.** Never restate what the code visibly does line by line. A comment earns its place only when it captures intent, a business rule, or a constraint the reader can't get from reading the code itself. If the code is self-evident, don't comment it.
+4. **Content bias: explain WHY, not WHAT.** WHY means why this code exists, its purpose, not the background story behind that purpose. Never restate how the code works line by line. A comment earns its place only when it captures intent, a business rule, or a constraint the reader can't get from reading the code itself. If the code is self-evident, don't comment it.
+   - Add a background reason only when the code and its purpose still don't explain themselves, and only one confirmed by the user's request, the spec, or the code. Never guess a reason
+     ```php
+     // 틀림: 목적 대신 추측한 배경 사정을 붙임
+     // 운영 외 환경의 허용 주소 외 발송 차단으로 인한 로그인 불가 방지, 계정과 무관하게 허용 주소 첫 번째로 발송
+
+     // 맞음: 코드가 존재하는 이유
+     // 개발 환경 로그인 시 첫 번째 허용 주소로 메일 발송
+     $to = app()->environment('production')
+         ? $admin->login_id
+         : trim(explode(',', config('mail.allowed_addresses'))[0]);
+     ```
 
 5. **Sparse by default.** Comment only at real decision points: business-logic branches, non-obvious external-system constraints, or short workarounds. Most functions and most lines carry zero comments — don't add one to every method just because you touched it.
    - **Pre-write gate, run before choosing a shape:** for each candidate comment, state what the reader loses if it is deleted. If the answer is "nothing — the name and signature already say it", don't write it. The shape rules (Korean, noun-phrase, doc block) are self-checkable from the comment text alone, so they get satisfied while this one gets skipped; that is exactly how a file ends up with a doc block above nearly every method.
