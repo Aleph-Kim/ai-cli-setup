@@ -127,5 +127,6 @@ Keep the same shapes and the same judgment (noun-phrase ending, WHY/caller-conte
 
 1. If the request is to comment test files, first confirm whether the user means the per-test descriptions shown in the runner output (PHPUnit `#[TestDox]`, Jest/Pest `it('...')`, pytest docstrings) rather than inline comments. Propose those first when test names are English. PHPUnit 12+ honors only the `#[TestDox]` attribute, not the `@testdox` annotation.
 2. Read the surrounding code to find genuine WHY-worthy spots — non-obvious constraints, business rules, external-system limitations, short workarounds, or a reusable model/query-builder method whose callers are worth noting. Skip self-evident code entirely.
-3. For each spot, pick shape (a)–(d) per rule 3, and write the comment in Korean following the tone in the examples above.
-4. Don't add comments beyond what's asked — if the user asked to comment one function, don't sweep the whole file.
+3. Before checking any shape rule, write one phrase per comment (new, edited, or under review) stating what the reader loses if it is deleted. If there is nothing to write, or the phrase only restates the code below or another comment, delete the comment. Apply shape rules only to the comments that survive. When reviewing, report this phrase per comment; a review that only checks shape is incomplete.
+4. For each spot, pick shape (a)–(d) per rule 3, and write the comment in Korean following the tone in the examples above.
+5. Don't add comments beyond what's asked — if the user asked to comment one function, don't sweep the whole file.
