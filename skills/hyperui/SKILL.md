@@ -1,6 +1,6 @@
 ---
 name: hyperui
-description: Build UI as plain HTML5 + Tailwind CSS utility classes in the HyperUI (hyperui.dev) style - no React, no JSX, no component library. Covers marketing sections (hero, feature, CTA, stats, banner), form controls and inputs, navigation, cards, and tables as modular copy-paste markup, using semantic elements like `<details>`/`<summary>` for interaction so JavaScript stays optional. Trigger before writing any HTML, template-engine markup (Blade, ERB, Twig, Jinja, Handlebars, Go templates), or Tailwind-styled front-end component, and when the user asks for a HyperUI pattern, a "pure HTML" component, or markup for a non-React stack. Pair with taste-skill (aesthetic direction) and web-design-guidelines (interaction/a11y quality bar).
+description: Build UI as plain HTML5 + Tailwind CSS utility classes in the HyperUI (hyperui.dev) style - no React, no JSX, no component library. Covers marketing sections (hero, feature, CTA, stats, banner), form controls and inputs, navigation, cards, and tables as modular copy-paste markup, using semantic elements like `<details>`/`<summary>` for interaction so JavaScript stays optional. Trigger before writing any HTML, template-engine markup (Blade, ERB, Twig, Jinja, Handlebars, Go templates), or Tailwind-styled front-end component, and when the user asks for a HyperUI pattern, a "pure HTML" component, or markup for a non-React stack.
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 [HyperUI](https://www.hyperui.dev/) is a collection of free, copy-paste UI built as **plain HTML with Tailwind CSS utility classes**. No runtime, no React, no component library - the markup is the deliverable. Use its patterns as the default shape for hand-written UI on any stack that renders HTML.
 
-This skill governs **markup and Tailwind conventions**. `taste-skill` decides the aesthetic direction; `web-design-guidelines` is the interaction/accessibility bar the markup must clear. Run all three on a real page.
+This skill governs **markup and Tailwind conventions**.
 
 ## When this applies
 
@@ -68,4 +68,3 @@ Compose a page from self-contained blocks, each a single outer element with a sc
 - [ ] Every icon `<svg>` has `aria-hidden="true"`; icon-only controls have an `sr-only` label?
 - [ ] Every input has a real `<label for>`; radio/checkbox groups in a `<fieldset>`?
 - [ ] Tables use real table markup inside an `overflow-x-auto` wrapper?
-- [ ] Ran `taste-skill` (look) and `web-design-guidelines` (mechanics) on the result?
