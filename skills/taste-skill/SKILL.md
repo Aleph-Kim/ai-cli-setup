@@ -1,6 +1,7 @@
 ---
 name: taste-skill
 description: Anti-slop design direction for landing pages, portfolios, marketing sites, and redesigns. Forces a deliberate design read (audience, vibe, aesthetic family) and overrides the LLM default look - AI-purple gradients, centered hero, three equal feature cards, Inter + slate, em-dashes, "Acme"/"Jane Doe" filler. Covers typography, color, spacing, motion depth, dark-mode integrity, and layout hierarchy. Trigger before writing any landing/marketing/portfolio UI, when the user asks for a page that should "not look AI-made", or on any visual redesign. Pair with web-design-guidelines (engineering/a11y checklist) and hyperui (HTML + Tailwind markup conventions).
+disable-model-invocation: true
 ---
 
 # Taste Skill

@@ -1,6 +1,7 @@
 ---
 name: hyperui
 description: Build UI as plain HTML5 + Tailwind CSS utility classes in the HyperUI (hyperui.dev) style - no React, no JSX, no component library. Covers marketing sections (hero, feature, CTA, stats, banner), form controls and inputs, navigation, cards, and tables as modular copy-paste markup, using semantic elements like `<details>`/`<summary>` for interaction so JavaScript stays optional. Trigger before writing any HTML, template-engine markup (Blade, ERB, Twig, Jinja, Handlebars, Go templates), or Tailwind-styled front-end component, and when the user asks for a HyperUI pattern, a "pure HTML" component, or markup for a non-React stack. Pair with taste-skill (aesthetic direction) and web-design-guidelines (interaction/a11y quality bar).
+disable-model-invocation: true
 ---
 
 # HyperUI Components

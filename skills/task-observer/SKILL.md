@@ -7,6 +7,7 @@ license: CC-BY-4.0
 metadata:
   author: Eoghan Henn and contributors
   source: github.com/rebelytics/one-skill-to-rule-them-all
+disable-model-invocation: true
 ---
 
 # Task Observer — Continuous Skill Discovery & Improvement

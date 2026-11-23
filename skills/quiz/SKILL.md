@@ -1,6 +1,7 @@
 ---
 name: quiz
 description: Generate a 4-choice multiple-choice quiz (3-10 questions, scaled to change size) about the current uncommitted work so the user can self-check their understanding, ask it interactively via AskUserQuestion (Claude) / request_user_input (Codex), then auto-grade with a table showing the user's picks plus explanations for wrong answers. Use when the user asks to verify/check their understanding of recent work ("이번 작업 내용 확인할 수 있게 퀴즈 만들어줘", "퀴즈 만들어줘", "이해도 확인", "작업 내용 퀴즈").
+disable-model-invocation: true
 ---
 
 # Quiz

@@ -1,6 +1,7 @@
 ---
 name: docs-upload
 description: eli5 스킬 결과물 또는 완성된 단일 HTML 시각화 문서를 docs 아카이브 서버에 업로드하고 등록한다. 사용자가 /docs-upload, "eli5 결과물 업로드해줘", "docs에 올려줘", "문서 업로드해줘", "시각화 결과물 등록해줘" 등의 요청을 했을 때 사용한다.
+disable-model-invocation: true
 ---
 
 # docs-upload — Docs 아카이브 서버 업로더

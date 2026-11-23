@@ -95,6 +95,7 @@ Before using any `claude-in-chrome`, Codex browser/computer-use tools, or any ot
 - Plan-mode plan files (the markdown written before calling ExitPlanMode) must also always be written in Korean — prose (context, steps, explanations, verification section) in Korean; code snippets/blocks inside the plan keep normal code (identifiers, syntax) unchanged.
 - README and other document prose: load the `comment-style` skill first and write in its style, even when the project's CLAUDE.md or AGENTS.md scopes that skill to code comments only.
 - This document itself is an exception and stays in English.
+- The user cannot read long text and reads at a high-school first-year level. Keep answers short, use plain words, explain jargon in simple terms, and prefer tables or short lists over long paragraphs.
 
 ## 7. Plan Files Cover Only the Current Round
 
@@ -114,17 +115,10 @@ Before using any `claude-in-chrome`, Codex browser/computer-use tools, or any ot
 ## 9. Task Observer (Continuous Skill Discovery)
 
 (task-observer activation block — template of v3.8.0-local.2)
-Activate task-observer when there is an improvement signal worth preserving
-for future tasks: repeated mistakes, reusable procedures, skill gaps, or
-conflicts between a skill and the actual environment.
-Activate immediately for explicit requests to run it, record observations,
-or conduct a review; mere mentions and usage questions do not qualify.
-Tool use, planning, and task complexity alone do not trigger activation.
-When uncertain, skip it.
-If a signal emerges mid-task, activate at that point, state the reason in
-one line, and run the Session Start Protocol. Also read the bodies of OPEN
-observations for skills already in use on the current task; retrospective
-logging of the preceding inactive period is not required.
+Activate task-observer only when the user invokes /task-observer.
+Never activate it on your own, even when an improvement signal appears.
+On activation, run the Session Start Protocol and read the bodies of OPEN
+observations for skills already in use on the current task.
 Remain active through that task's review and feedback. Reassess activation
 for each separate request.
 While inactive, skip all observer duties below: startup scans, observation
