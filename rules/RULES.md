@@ -152,7 +152,3 @@ Use Claude's `AskUserQuestion` or Codex's `request_user_input` for interactive q
 - Create a branch only when the user asks for one (e.g. "브랜치 만들어서", "PR 올려줘").
 - If the current branch is not `main` when asked to commit, commit there; don't switch branches on your own.
 - Pushing still requires an explicit request.
-
----
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
