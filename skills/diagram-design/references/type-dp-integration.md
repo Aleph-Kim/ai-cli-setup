@@ -8,6 +8,21 @@ This type is **parametric** — like `type-high-level.md`, every coord is derive
 
 ---
 
+## Contents
+
+- 1. Inputs — the parameter contract
+- 2. Layout formulas — deterministic geometry
+- 3. Connector rules (mandatory)
+- 4. Component color override (mirrors `type-high-level.md` §3.4)
+- 5. Focal rule
+- 6. Dark mode
+- 7. Reproducibility checklist (taste gate)
+- 8. Sources and consumers — icon library
+- 9. Identity, common services → connect to the layer, not to components
+- 10. Budget — this type exceeds the default
+- 11. Anti-patterns
+- 12. Examples
+
 ## 1. Inputs — the parameter contract
 
 ```yaml

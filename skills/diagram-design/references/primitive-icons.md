@@ -2,6 +2,23 @@
 
 A monochrome 24×24 icon library for IT/cloud diagrams. Each icon uses `currentColor` so it inherits ink from its parent SVG and adapts to the editorial skin or any user-onboarded brand palette.
 
+## Contents
+
+- Usage
+- Compute
+- People
+- Network
+- Data
+- Kubernetes
+- Action
+- DevOps
+- Brand
+- Data stack
+- Language
+- Statistical tools
+- File formats
+- License attribution
+
 ## Usage
 
 Find the icon by name (the `### name` headings below). Copy the fenced `<svg>` snippet into your diagram. Default size is 24×24; wrap in `<g transform="translate(x,y) scale(s)">` to position and resize. Set `color`, `fill`, or `stroke` on the parent group/SVG to control color.

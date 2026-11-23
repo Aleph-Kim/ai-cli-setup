@@ -8,6 +8,21 @@ This type is **parametric** — the inputs schema in §1 drives every coordinate
 
 ---
 
+## Contents
+
+- 1. Inputs — the parameter contract
+- 2. Layout formulas — deterministic geometry
+- 3. Arrow rules (mandatory)
+- 4. Component color override
+- 5. Focal rule
+- 6. Dark mode
+- 7. Reproducibility checklist (taste gate)
+- 8. Data-type chips reference (input + output)
+- 9. Legend (3- or 4-row strip)
+- 10. Complexity budget
+- 11. Anti-patterns
+- 12. Examples
+
 ## 1. Inputs — the parameter contract
 
 ```yaml

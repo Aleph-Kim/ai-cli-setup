@@ -1,6 +1,7 @@
 ---
 name: eli5
 description: 주제를 "단계별 재생기(step player)" 형식의 인터랙티브 아티팩트로 시각화한다. 사용자가 /eli5 를 직접 입력하거나 이 스킬을 이름으로 지목했을 때만 사용한다. 설명·시각화·다이어그램 요청이라도 스킬을 명시하지 않았다면 이 스킬을 쓰지 말고 평소대로 답한다.
+disable-model-invocation: true
 ---
 
 # eli5 — 단계별 재생기 explainer
@@ -125,7 +126,7 @@ python3 <스킬경로>/scripts/build.py \
 
 ## 4. 다이어그램 (diagram.svg)
 
-다이어그램 생성 시 **`diagram-design` 스킬**(`skills/diagram-design/`)의 39개 비주얼 레이아웃과 디자인 원칙을 적용하여 SVG를 작성한다.
+다이어그램 생성 시 **`diagram-design` 스킬**의 39개 비주얼 레이아웃과 디자인 원칙을 적용하여 SVG를 작성한다. 그 스킬은 이 스킬 폴더 옆에 있다: `<스킬경로>/../diagram-design/` 의 `SKILL.md` 와 `references/` 를 Read 도구로 직접 읽는다(Skill 도구로 부르지 않는다).
 
 ### 4-1. 배치 형태를 먼저 정한다
 
@@ -141,7 +142,7 @@ SVG를 쓰기 전에 `diagram-design` 분류를 바탕으로 형태를 고르고
 | 순환 주기 및 피드백 | 루프 / 플라이휠 | `type-loop.md` | 이벤트 루프, 캐시 갱신 주기 |
 | 부모-자식 분해 관계 | 계층 트리 | `type-tree.md` | DOM/AST 트리, 컴포넌트 구조 |
 | 서로 참조하는 관계망 | 관계망 / ERD | `type-er.md`, `type-dependency.md` | 마이크로서비스, DB ERD |
-| 두 방식·두 구조의 대조 | 좌우 2패널 비교 | `type-comparison.md`(없으면 아래 4-2 비교 배치 규칙) | 리드 복제 vs 샤딩, REST vs GraphQL, 프로세스 vs 스레드 |
+| 두 방식·두 구조의 대조 | 좌우 2패널 비교 | 전용 레퍼런스 없음 (아래 4-2 비교 배치 규칙) | 리드 복제 vs 샤딩, REST vs GraphQL, 프로세스 vs 스레드 |
 | 여럿이 한 지점을 거쳐 여럿으로 갈라짐 | 허브 (3열 수렴·분기) | `type-architecture.md` + 아래 4-2 허브 배치 규칙 | API 게이트웨이, 로드밸런서, 메시지 브로커, 서비스 메시 |
 
 "~의 차이", "A vs B", "언제 무엇을 쓰나"는 비교 행, "가운데 끼어 양쪽을 중개하는 것"(프록시, 브로커, ORM, 어댑터)은 허브 행이다. 표에 없는 형태를 즉흥으로 만들기 전에 이 두 행에 앉는지 먼저 본다.

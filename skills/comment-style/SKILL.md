@@ -1,13 +1,12 @@
 ---
 name: comment-style
-description: Write code comments using the user's fixed personal style (Korean, WHY-focused, sparse) — the same convention across all repositories, not language/repo-specific detection. Trigger before any code edit that adds or touches comment characters (//, #, /** */, etc.), whenever writing or adding comments, or when the user asks to comment code in "my style" ("주석 스타일대로/평소처럼 달아줘", "주석 컨벤션 알려줘"). Also use before writing README or other document prose. Does not apply to commit messages (see commit-message skill).
+description: >-
+  Write code comments using the user's fixed personal style (Korean, WHY-focused, sparse) — the same convention across all repositories, not language/repo-specific detection. Trigger before writing or touching any comment line (//, #, /*, /** */, <!-- -->) by any route (Edit, Write, printf/echo appends, heredocs, sed or Python scripts) and in any file with comment syntax, including .gitignore, .env and YAML; when a shell command will write a comment line, load this skill before running it. Also trigger whenever writing or adding comments, or when the user asks to comment code in "my style" ("주석 스타일대로/평소처럼 달아줘", "주석 컨벤션 알려줘"). Also use before writing README or other document prose. Does not apply to commit messages (see commit-message skill).
 ---
 
 # Comment Style
 
 Apply the user's fixed personal comment convention. It is a personal habit, not a project-specific rule — use it in any codebase, in whatever comment syntax that language provides (`//`, `#`, `<!-- -->`, etc.), keeping the same shape and judgment described below.
-
-**Activation checkpoint (artefact-triggered):** Load and consult this skill before writing or touching comment lines (`//`, `#`, `/*`, `/**`, `<!-- -->`) by any route (Edit, Write, `printf`/`echo` appends, heredocs, sed or Python scripts) and in any file with comment syntax, including `.gitignore`, `.env` and YAML. If the text a shell command will write contains a comment line, load this skill before running the command. When editing code, comments often arise incidentally rather than by explicit user prompt; treat the act of inserting or modifying a comment line as the invocation checkpoint.
 
 ## Core rules
 

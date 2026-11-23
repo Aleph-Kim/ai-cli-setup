@@ -6,6 +6,18 @@ This type is **parametric**. The diagram is fully determined by a small list of 
 
 ---
 
+## Contents
+
+- 1. Inputs — the parameter contract
+- 2. Layout formulas — deterministic geometry
+- 3. Connector rules (mandatory)
+- 4. Block branching rules (fan-out)
+- 5. Vertical chevrons — semantics
+- 6. Dark mode
+- 7. Reproducibility checklist (the taste gate)
+- 8. Anti-patterns
+- 9. Examples
+
 ## 1. Inputs — the parameter contract
 
 Before drawing, collect these from the user (or accept them as a YAML/JSON block). Everything in this reference is derived from these inputs. Don't invent geometry on the fly.

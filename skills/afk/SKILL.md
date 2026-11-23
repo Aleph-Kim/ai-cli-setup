@@ -7,6 +7,7 @@ description: >
   they go, then tell them explicitly whether they can leave now, with an
   estimated duration, what will proceed unattended, and what waits for
   their return — instead of promising to "leave questions for later".
+disable-model-invocation: true
 ---
 
 # AFK — Clear Blockers Before the User Leaves

@@ -6,6 +6,7 @@ description: >
   rejecting a drafted answer, or any similar callout. Do not just output a
   corrected answer and move on; explain the real cause, propose a concrete
   recurrence-prevention step, and get it reviewed first.
+disable-model-invocation: true
 ---
 
 # Mistake Response — Explain, Prevent, Get Reviewed

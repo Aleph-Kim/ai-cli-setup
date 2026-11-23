@@ -8,6 +8,19 @@ This type is **parametric** — the inputs schema in §1 drives every coordinate
 
 ---
 
+## Contents
+
+- 1. Inputs — the parameter contract
+- 2. Layout formulas — deterministic geometry
+- 3. Connector rules (mandatory)
+- 4. Component color override (per-component `color: "#hex"`)
+- 5. Focal rule
+- 6. Dark mode
+- 7. Reproducibility checklist (taste gate)
+- 8. Anti-patterns
+- 9. Examples
+- 10. Worked YAML — full inputs for `example-it-state.html`
+
 ## 1. Inputs — the parameter contract
 
 ```yaml
