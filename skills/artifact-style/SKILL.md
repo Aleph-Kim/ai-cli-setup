@@ -15,7 +15,7 @@ description: The user's fixed component library for Artifact pages (Korean readi
 
 ## 대상 정하기
 
-새 페이지를 만들 때마다 페이지 JSON을 쓰기 전에 AskUserQuestion(Codex는 request_user_input)으로 대상을 질문하고 답을 받은 뒤 시작. 사용자가 요청에서 대상을 말했어도 생략하지 않음. 선택지는 「나만 보기」(`self`)와 「링크만 공유받은 사람」(`shared`) 두 개, 고른 값을 페이지 JSON의 `audience`에 적음 (빠지면 빌드 실패). 이미 만든 페이지를 고쳐 다시 빌드할 때는 JSON에 적힌 대상을 사용.
+새 페이지를 만들 때마다 페이지 JSON을 쓰기 전에 AskUserQuestion(Codex는 request_user_input)으로 대상을 질문하고 답을 받은 뒤 시작. 사용자가 요청에서 대상을 말했어도 생략하지 않음. 선택지는 「나만 보기 (로컬)」, 「나만 보기 (아티팩트)」, 「링크만 공유받은 사람」 세 개. 나만 보기 둘은 `self`, 링크만 공유받은 사람은 `shared`를 페이지 JSON의 `audience`에 적음 (빠지면 빌드 실패). 로컬을 고르면 Artifact 도구로 게시하지 않고 빌드한 HTML을 `open`으로 브라우저에서 열고 파일 경로를 알림. 이미 만든 페이지를 고쳐 다시 빌드할 때는 JSON에 적힌 대상과 처음 고른 방식(로컬 또는 아티팩트)을 그대로 사용.
 
 | audience | 읽는 사람 | 쓰는 법 |
 |---|---|---|
@@ -34,8 +34,8 @@ description: The user's fixed component library for Artifact pages (Korean readi
 1. `examples/doc.json`(문서형) 또는 `examples/catalog.json`(목록형)을 읽고 같은 모양으로 페이지 JSON 작성. 저장 위치는 사용자가 정하지 않았으면 스크래치패드
 2. `python3 -I <이 폴더>/build.py page.json -o page.html` 실행
 3. 오류가 나오면 JSON을 고쳐 다시 빌드. 글자 수 초과는 줄이거나 `details`로 접기
-4. 생성된 HTML을 그대로 Artifact 도구로 게시. 생성된 HTML은 손으로 고치지 않고, 고칠 때도 JSON을 고쳐 다시 빌드
-5. 게시 전 빌드 결과에 `<meta name="artifact-style">`이 있는지 확인
+4. 생성된 HTML을 그대로 Artifact 도구로 게시 (로컬은 `open`으로 열기). 생성된 HTML은 손으로 고치지 않고, 고칠 때도 JSON을 고쳐 다시 빌드
+5. 게시하거나 열기 전 빌드 결과에 `<meta name="artifact-style">`이 있는지 확인
 
 ## 글 안 표기
 
