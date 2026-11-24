@@ -1,0 +1,87 @@
+{
+  "layout": "catalog",
+  "audience": "shared",
+  "intro": "이 페이지가 무엇이고 누가 읽으면 좋은지 한두 문장. 링크만 받은 사람도 바로 알 수 있게",
+  "title": "목록형 견본",
+  "eyebrow": "artifact-style 목록형 견본",
+  "h1": "도구 모음 견본",
+  "lead": "카드를 검색해서 찾는 페이지",
+  "search": "이름이나 쓰임으로 찾기 (예: 자막)",
+  "summary": [
+    {
+      "value": "3",
+      "label": "전체 항목"
+    },
+    {
+      "value": "1",
+      "label": "새 항목"
+    }
+  ],
+  "groups": [
+    {
+      "title": "만들기",
+      "cards": [
+        {
+          "name": "sample-tool",
+          "one": "한 줄 설명. 언제 쓰는지 쉽게",
+          "badges": [
+            {
+              "text": "NEW",
+              "tone": "new"
+            },
+            {
+              "text": "직접 만듦",
+              "tone": "accent"
+            },
+            {
+              "text": "상업 가능",
+              "tone": "ok"
+            }
+          ],
+          "info": [
+            [
+              "언제",
+              "이럴 때 써요"
+            ],
+            [
+              "사용법",
+              "`/sample-tool 주제`"
+            ]
+          ],
+          "links": [
+            {
+              "text": "받는 곳",
+              "url": "https://claude.ai"
+            }
+          ]
+        },
+        {
+          "name": "other-tool",
+          "one": "한 줄 설명",
+          "badges": [
+            {
+              "text": "외부",
+              "tone": "line"
+            },
+            {
+              "text": "조건부",
+              "tone": "warn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "검수",
+      "cards": [
+        {
+          "name": "check-tool",
+          "one": "한 줄 설명"
+        }
+      ]
+    }
+  ],
+  "footer": [
+    "출처와 기준 날짜"
+  ]
+}

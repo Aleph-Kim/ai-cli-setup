@@ -152,3 +152,7 @@ Use Claude's `AskUserQuestion` or Codex's `request_user_input` for interactive q
 - Create a branch only when the user asks for one (e.g. "브랜치 만들어서", "PR 올려줘").
 - If the current branch is not `main` when asked to commit, commit there; don't switch branches on your own.
 - Pushing still requires an explicit request.
+
+## 14. Artifact Page Style
+
+Before writing a new untyped HTML page for Claude's Artifact tool, load the `artifact-style` skill, write the page as JSON and publish only what its `build.py` generates; never hand-write or hand-edit the page HTML. When no component fits, add one to the library as the skill describes instead of writing custom markup. The user chose this look from earlier pages, so it takes precedence over the default per-subject design guidance. The skill lists when it does not apply.

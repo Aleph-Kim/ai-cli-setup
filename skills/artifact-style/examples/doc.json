@@ -1,0 +1,210 @@
+{
+  "layout": "doc",
+  "audience": "self",
+  "title": "컴포넌트 견본",
+  "eyebrow": "artifact-style 문서형 견본 · 2026년 11월",
+  "h1": "문서형 컴포넌트 견본",
+  "hero": {
+    "items": [
+      "핵심 하나를 __한 줄로__",
+      "핵심 둘",
+      "핵심 셋"
+    ],
+    "text": "전체 결론 한두 문장. 모든 컴포넌트가 이 견본에 한 번씩 나와요."
+  },
+  "sections": [
+    {
+      "id": "basic",
+      "nav": "기본",
+      "eyebrow": "answer, points, box, details",
+      "title": "단락의 기본 모양",
+      "blocks": [
+        {
+          "type": "answer",
+          "text": "큰 답 한 줄. 가장 중요한 말은 ==형광펜==으로."
+        },
+        {
+          "type": "points",
+          "items": [
+            "짧은 점 하나",
+            "**굵게**와 `코드`도 쓸 수 있어요",
+            "[링크](https://claude.ai)도 돼요"
+          ]
+        },
+        {
+          "type": "box",
+          "tone": "red",
+          "title": "꼭 볼 것",
+          "text": "빨간 상자는 가장 중요한 경고나 교훈"
+        },
+        {
+          "type": "details",
+          "summary": "접어 둔 세부 내용",
+          "blocks": [
+            {
+              "type": "text",
+              "text": "details 안에는 긴 점 목록, 표, 문단을 넣어요."
+            },
+            {
+              "type": "points",
+              "items": [
+                "접힌 곳은 점을 8개까지",
+                "한 점이 200자까지"
+              ]
+            },
+            {
+              "type": "note",
+              "text": "회색 보충 문단. 출처나 단서를 한마디로."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "numbers",
+      "nav": "숫자",
+      "eyebrow": "nums, steps, formula, rank",
+      "title": "숫자와 순서",
+      "blocks": [
+        {
+          "type": "nums",
+          "items": [
+            {
+              "value": "3,300원",
+              "label": "숫자 설명"
+            },
+            {
+              "value": "20일",
+              "label": "숫자 설명"
+            }
+          ]
+        },
+        {
+          "type": "steps",
+          "items": [
+            "**첫 단계**: 설명",
+            "**둘째 단계**: 설명"
+          ]
+        },
+        {
+          "type": "formula",
+          "items": [
+            {
+              "title": "감정",
+              "text": "개념 카드 설명"
+            },
+            {
+              "title": "타이밍",
+              "text": "개념 카드 설명"
+            }
+          ]
+        },
+        {
+          "type": "rank",
+          "items": [
+            {
+              "value": "12.2만",
+              "text": "순위 항목 설명"
+            },
+            {
+              "value": "0.2만",
+              "text": "순위 항목 설명"
+            }
+          ]
+        },
+        {
+          "type": "meter",
+          "percent": 7,
+          "label": "52만 회 중 수익이 된 비율 7%"
+        }
+      ]
+    },
+    {
+      "id": "compare",
+      "nav": "비교",
+      "eyebrow": "table, box, code",
+      "title": "표와 코드",
+      "blocks": [
+        {
+          "type": "table",
+          "columns": [
+            "항목",
+            "내용",
+            "상태"
+          ],
+          "rows": [
+            [
+              "예시",
+              "설명",
+              {
+                "tag": "ok",
+                "text": "가능"
+              }
+            ],
+            [
+              "예시",
+              "설명",
+              {
+                "tag": "chk",
+                "text": "확인 필요",
+                "note": "약관 확인"
+              }
+            ],
+            [
+              "예시",
+              "설명",
+              {
+                "tag": "no",
+                "text": "불가"
+              }
+            ]
+          ]
+        },
+        {
+          "type": "box",
+          "tone": "good",
+          "title": "좋은 소식",
+          "text": "초록 상자"
+        },
+        {
+          "type": "box",
+          "tone": "warn",
+          "title": "주의",
+          "text": "노란 상자"
+        },
+        {
+          "type": "code",
+          "text": "python3 -I build.py page.json -o page.html"
+        }
+      ]
+    },
+    {
+      "id": "todo",
+      "nav": "할 일",
+      "eyebrow": "checklist, copy",
+      "title": "할 일과 복사 문장",
+      "blocks": [
+        {
+          "type": "checklist",
+          "items": [
+            "할 일 하나",
+            "할 일 둘"
+          ]
+        },
+        {
+          "type": "copy",
+          "items": [
+            {
+              "label": "요청 문장",
+              "text": "코드를 쓰기 전에 계획을 먼저 보여줘."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "footer": [
+    "출처: 무엇을 보고 정리했는지, 기준 날짜",
+    "확인하지 못한 내용과 오차 가능성"
+  ]
+}
