@@ -80,7 +80,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 **Never launch Chrome/browser automation to test a change without asking first.**
 
-Before using any `claude-in-chrome`, Codex browser/computer-use tools, or any other browser automation tool (navigating, clicking, logging in, driving a UI) to verify a feature, ask the user for permission first. This applies even when a task or skill (e.g. `/verify`) would otherwise call for driving the app in a browser.
+Before using any `claude-in-chrome`, Codex browser/computer-use tools, or any other browser automation tool (navigating, clicking, logging in, driving a UI) to verify a feature, ask the user for permission first. This applies even when a task or skill (e.g. `/verify`) would otherwise call for driving the app in a browser, with two exceptions that run without asking: the ig-viral skill's research browsing and the hallmark skill's `sloplint.mjs --render` check.
 
 - Ask explicitly, e.g. "Can I open Chrome and log into the admin panel to test this?"
 - If permission was already given earlier in the same conversation for the same task, no need to re-ask within that session.
@@ -139,7 +139,7 @@ Before using any `claude-in-chrome`, Codex browser/computer-use tools, or any ot
 
 ## 11. Exploration Subagents
 
-**Using Claude's Agent tool (Explore / Plan subagents) or Codex's `spawn_agent` tool for codebase exploration and in Plan Mode is allowed without asking.** This overrides the harness default that forbids Agent use unless requested — that default and the Plan Mode workflow otherwise contradict each other and the choice was being made silently each session. Outside exploration and planning, the general rule still applies: don't spawn agents for ordinary implementation work unless the user asks.
+**Using Claude's Agent tool (Explore / Plan subagents) or Codex's `spawn_agent` tool for codebase exploration and in Plan Mode is allowed without asking.** Outside exploration and planning, don't spawn agents for ordinary implementation work unless the user asks.
 
 ## 12. Interactive Questions
 

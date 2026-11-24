@@ -43,7 +43,7 @@ Apply the user's fixed personal comment convention. It is a personal habit, not 
      // 가수 조회 및 저장 (이미지 업로드는 신규 생성 시에만)
      // 큐에 쌓인 알림을 일괄 전송, 만료된(410/404) 구독은 자동 삭제
      ```
-   - **(b) `/** */` doc block — ALWAYS used above method, function, and property declarations.**
+   - **(b) `/** */` doc block — the only shape for a comment placed above a method, function, or property declaration** (whether such a comment belongs there at all is decided by rule 5).
      - Any comment placed directly above a method, function, or property declaration must use the doc comment syntax (`/** ... */`), regardless of whether it is a single line or multi-line:
        ```php
        /**
