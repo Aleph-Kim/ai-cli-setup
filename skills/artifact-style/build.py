@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import base64
 import html
 import json
 import re
@@ -311,8 +312,36 @@ def doc(page, ctx):
 </div>'''
 
 
-def card(c, p):
-    c = keys(c, p, ["name", "one"], ["badges", "info", "links"])
+IMG_TYPES = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
+
+
+# 근거 그림은 data URI로 넣어 페이지 밖으로 나가지 않고 확인, 출처 주소는 링크 없이 글자로만
+def evidence(v, p, ctx):
+    out = ""
+    for i, ev in enumerate(items(v, p, 1, 8)):
+        q = f"{p}[{i}]"
+        ev = keys(ev, q, ["title"], ["date", "text", "img", "src"])
+        img = ""
+        if "img" in ev:
+            f = ctx["base"] / str(ev["img"])
+            kind = IMG_TYPES.get(f.suffix.lower())
+            if not kind or not f.is_file():
+                fail(q + ".img", "페이지 JSON 옆의 jpg, png, webp 파일이어야 함")
+            elif f.stat().st_size > 300_000:
+                fail(q + ".img", "300KB 이하로 줄여야 함 (가로 640 이하)")
+            else:
+                data = base64.b64encode(f.read_bytes()).decode()
+                img = f'<img src="data:{kind};base64,{data}" alt="{html.escape(plain(ev.get("title") or ""))}" loading="lazy">'
+        date = f' <small>{text(ev["date"], q + ".date", 16)}</small>' if "date" in ev else ""
+        body = f'<p>{text(ev["text"], q + ".text", 220)}</p>' if "text" in ev else ""
+        src = f'<small class="ev-src">{raw(ev["src"], q + ".src", 160)}</small>' if "src" in ev else ""
+        out += (f'<figure class="ev-item{" has-img" if img else ""}">{img}'
+                f'<figcaption><b>{text(ev.get("title"), q + ".title", 40)}</b>{date}{body}{src}</figcaption></figure>')
+    return f'<details class="ev"><summary>근거 자료 {len(v) if isinstance(v, list) else 0}개</summary><div class="ev-list">{out}</div></details>'
+
+
+def card(c, p, ctx):
+    c = keys(c, p, ["name", "one"], ["badges", "info", "links", "pick", "evidence"])
     badges = ""
     for i, bd in enumerate(items(c.get("badges", []), p + ".badges", 0, 5)):
         q = f"{p}.badges[{i}]"
@@ -331,15 +360,22 @@ def card(c, p):
         q = f"{p}.links[{i}]"
         ln = keys(ln, q, ["text", "url"])
         links += f'<a href="{url(ln.get("url"), q + ".url")}" target="_blank" rel="noopener">{text(ln.get("text"), q + ".text", 20)}</a>'
+    # 카드 고르기 체크, 체크한 카드 이름은 페이지 picked 칸에 모여 복사로 전달
+    if "pick" in c:
+        ctx["pick_n"] += 1
+        pid = f"p{ctx['pick_n']}"
+        badges += (f'<label class="pick" for="{pid}"><input type="checkbox" id="{pid}" data-name="{html.escape(plain(c.get("name") or ""))}">'
+                   f'<span>{text(c["pick"], p + ".pick", 10)}</span></label>')
     return (f'<article class="card"><div class="card-top"><span class="card-name">{text(c.get("name"), p + ".name", 40)}</span>{badges}</div>'
             f'<p class="card-one">{text(c.get("one"), p + ".one", 120)}</p>'
             + (f'<dl class="info">{info}</dl>' if info else "")
             + (f'<div class="card-links">{links}</div>' if links else "")
+            + (evidence(c["evidence"], p + ".evidence", ctx) if "evidence" in c else "")
             + "</article>")
 
 
 def catalog(page, ctx):
-    keys(page, "page", ["layout", "audience", "title", "h1", "summary", "groups", "footer"], ["eyebrow", "lead", "search", "intro"])
+    keys(page, "page", ["layout", "audience", "title", "h1", "summary", "groups", "footer"], ["eyebrow", "lead", "search", "intro", "picked"])
     ctx["scripts"].add("search")
     sums = ""
     for i, it in enumerate(items(page.get("summary"), "summary", 2, 4)):
@@ -351,13 +387,22 @@ def catalog(page, ctx):
         q = f"groups[{g}]"
         grp = keys(grp, q, ["title", "cards"])
         cards = items(grp.get("cards"), q + ".cards", 1, 60)
-        inner = "".join(card(c, f"{q}.cards[{i}]") for i, c in enumerate(cards))
+        inner = "".join(card(c, f"{q}.cards[{i}]", ctx) for i, c in enumerate(cards))
         groups += f'<div class="group"><div class="group-title"><h2>{text(grp.get("title"), q + ".title", 20)}</h2><small>{len(cards)}개</small></div><div class="cards">{inner}</div></div>'
     eyebrow = f'<span class="eyebrow">{text(page["eyebrow"], "eyebrow", 50)}</span>' if "eyebrow" in page else ""
     lead = f'<p class="muted">{text(page["lead"], "lead", 80)}</p>' if "lead" in page else ""
     if "intro" in ctx:
         lead = f'<p class="intro">{ctx["intro"]}</p>\n' + lead
     search = raw(page["search"], "search", 40) if "search" in page else "이름이나 쓰임으로 찾기"
+    picked = ""
+    if "picked" in page:
+        if not ctx["pick_n"]:
+            fail("picked", "pick 달린 카드가 하나 이상 있어야 함")
+        ctx["scripts"].update({"pick", "copy"})
+        picked = (f'<div class="picked"><div><small>{text(page["picked"], "picked", 30)} <b id="pick-n">0</b>개</small>'
+                  f'<q id="pick-out">아직 없어요</q></div><button class="copy-btn" type="button">복사</button></div>')
+    elif ctx["pick_n"]:
+        fail("picked", "pick 달린 카드가 있으면 체크 결과 칸 이름(picked) 필요")
     return f'''<div class="wrap wide">
 
 <header>
@@ -367,6 +412,8 @@ def catalog(page, ctx):
 </header>
 
 <div class="summary">{sums}</div>
+
+{picked}
 
 <div class="bar" role="search"><input id="q" type="search" placeholder="{search}" aria-label="찾기"></div>
 
@@ -394,6 +441,19 @@ SCRIPTS = {
     try{navigator.clipboard.writeText(q.textContent).then(done,pick)}catch(e){pick()}
   });
 });""",
+    # 고른 상태는 보는 사람 브라우저에만 저장, 체크한 카드 이름을 쉼표로 이어 결과 칸에 표시
+    "pick": """(function(){
+  var boxes=document.querySelectorAll('.pick input'), out=document.getElementById('pick-out'), n=document.getElementById('pick-n');
+  function show(){
+    var names=[]; boxes.forEach(function(el){ if(el.checked) names.push(el.dataset.name); });
+    n.textContent=names.length; out.textContent=names.length?names.join(', '):'아직 없어요';
+  }
+  boxes.forEach(function(el){
+    try{ if(localStorage.getItem('pick-'+document.title+'-'+el.id)==='1') el.checked=true; }catch(e){}
+    el.addEventListener('change',function(){ try{ localStorage.setItem('pick-'+document.title+'-'+el.id, el.checked?'1':'0'); }catch(e){} show(); });
+  });
+  show();
+})();""",
     "search": """(function(){
   var q=document.getElementById('q'), empty=document.getElementById('empty');
   q.addEventListener('input',function(){
@@ -422,8 +482,8 @@ def audience(page, ctx):
         ctx["intro"] = text(intro, "intro", 120)
 
 
-def build(page):
-    ctx = {"in_details": False, "ids": set(), "nav": [], "scripts": set(), "check_n": 0}
+def build(page, base=Path(".")):
+    ctx = {"in_details": False, "ids": set(), "nav": [], "scripts": set(), "check_n": 0, "pick_n": 0, "base": base}
     if not isinstance(page, dict):
         fail("page", "객체여야 함")
         return ""
@@ -449,7 +509,7 @@ def main():
         page = json.loads(args.page.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as e:
         sys.exit(f"페이지 파일을 읽지 못함: {e}")
-    out = build(page)
+    out = build(page, args.page.resolve().parent)
     if errors:
         print("\n".join(errors), file=sys.stderr)
         sys.exit(f"형식 오류 {len(errors)}개, HTML을 만들지 않음")

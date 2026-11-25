@@ -77,9 +77,9 @@ description: The user's fixed component library for Artifact pages (Korean readi
 
 ## 목록형 (`"layout": "catalog"`)
 
-여러 항목을 검색해서 찾는 페이지(도구 모음, 카탈로그). 페이지: `audience`, `intro`(shared 필수), `title`, `h1`, `eyebrow`(선택), `lead`(선택), `search`(선택, 검색창 안내), `summary` 2~4개 {`value`, `label`}, `groups` 1~20개 {`title`, `cards` 1~60개}, `footer`
+여러 항목을 검색해서 찾는 페이지(도구 모음, 카탈로그). 페이지: `audience`, `intro`(shared 필수), `title`, `h1`, `eyebrow`(선택), `lead`(선택), `search`(선택, 검색창 안내), `summary` 2~4개 {`value`, `label`}, `picked`(선택, 체크 결과 칸 이름 30자, `pick` 카드가 있으면 필수), `groups` 1~20개 {`title`, `cards` 1~60개}, `footer`
 
-- 카드: `name`(40자), `one`(한 줄 설명 120자), `badges` 0~5개 {`text` 16자, `tone` accent, line, ok, warn, new}, `info` 0~6줄 [이름 6자, 내용 160자], `links` 0~4개 {`text`, `url`}
+- 카드: `name`(40자), `one`(한 줄 설명 120자), `badges` 0~5개 {`text` 16자, `tone` accent, line, ok, warn, new}, `info` 0~6줄 [이름 6자, 내용 160자], `links` 0~4개 {`text`, `url`}, `pick`(선택, 체크박스 이름 10자. 체크한 카드 이름이 `picked` 칸에 모여 복사 버튼으로 전달, 체크 상태는 브라우저에 저장), `evidence`(선택, 「근거 자료」 접기 1~8개 {`title` 40자, `date` 16자, `text` 220자, `img` 페이지 JSON 기준 jpg·png·webp 300KB 이하 경로, `src` 출처 주소 160자}. 그림은 페이지 안에 넣고 출처는 링크 없이 글자로 표시해 다른 창으로 나가지 않음)
 - 검색창이 카드 글자 전체를 찾고, 결과 없는 묶음은 숨김
 
 ## 컴포넌트 추가

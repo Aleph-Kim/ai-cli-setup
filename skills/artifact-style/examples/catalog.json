@@ -53,6 +53,14 @@
               "text": "받는 곳",
               "url": "https://claude.ai"
             }
+          ],
+          "evidence": [
+            {
+              "title": "근거 글 제목",
+              "date": "2026-11-25",
+              "text": "근거 내용을 짧게 요약하거나 인용",
+              "src": "https://example.com/post"
+            }
           ]
         },
         {
@@ -67,7 +75,8 @@
               "text": "조건부",
               "tone": "warn"
             }
-          ]
+          ],
+          "pick": "고르기"
         }
       ]
     },
@@ -76,12 +85,14 @@
       "cards": [
         {
           "name": "check-tool",
-          "one": "한 줄 설명"
+          "one": "한 줄 설명",
+          "pick": "고르기"
         }
       ]
     }
   ],
   "footer": [
     "출처와 기준 날짜"
-  ]
+  ],
+  "picked": "체크한 항목"
 }
