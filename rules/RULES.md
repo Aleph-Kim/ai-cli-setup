@@ -85,6 +85,8 @@ Before using any `claude-in-chrome`, Codex browser/computer-use tools, or any ot
 - Ask explicitly, e.g. "Can I open Chrome and log into the admin panel to test this?"
 - If permission was already given earlier in the same conversation for the same task, no need to re-ask within that session.
 - Other verification (curl, artisan tinker, running tests, checking logs) doesn't require this - only actual browser automation.
+- This covers every way of touching the user's Chrome, not only browser-automation tools: AppleScript/osascript (`execute javascript`, opening/closing windows or tabs, switching tabs), System Events keystrokes or mouse events, reloading or reconfiguring extensions (`chrome://extensions`, `developerPrivate`), and changing extension shortcuts. Never do any of these without asking first, even to "just reload" a build.
+- Launching a separate test browser (puppeteer, headless Chrome, e2e harnesses) also needs explicit permission each time.
 
 ## 6. Respond in Korean
 
