@@ -80,7 +80,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 **Never launch Chrome/browser automation to test a change without asking first.**
 
-Before using any `claude-in-chrome`, Codex browser/computer-use tools, or any other browser automation tool (navigating, clicking, logging in, driving a UI) to verify a feature, ask the user for permission first. This applies even when a task or skill (e.g. `/verify`) would otherwise call for driving the app in a browser, with two exceptions that run without asking: the ig-viral skill's research browsing and the hallmark skill's `sloplint.mjs --render` check.
+Before using any `claude-in-chrome`, Codex browser/computer-use tools, or any other browser automation tool (navigating, clicking, logging in, driving a UI) to verify a feature, ask the user for permission first. This applies even when a task or skill (e.g. `/verify`) would otherwise call for driving the app in a browser, with three exceptions that run without asking: the ig-viral skill's research browsing, the hallmark skill's `sloplint.mjs --render` check, and in the ai-video-setup project, opening already-saved local files in a separate headless Chrome to capture media (see that project's CLAUDE.md, user decision 2026-11-27).
 
 - Ask explicitly, e.g. "Can I open Chrome and log into the admin panel to test this?"
 - If permission was already given earlier in the same conversation for the same task, no need to re-ask within that session.
